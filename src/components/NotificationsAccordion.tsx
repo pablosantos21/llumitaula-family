@@ -115,7 +115,7 @@ export function NotificationsAccordion({
                           </Badge>
                         ) : (
                           <Badge
-                            variant="outline"
+                            variant="warning"
                             className="flex items-center gap-1 text-xs"
                           >
                             <EyeOff className="h-3 w-3" />

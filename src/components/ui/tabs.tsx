@@ -5,7 +5,7 @@ interface TabsProps {
   }>;
   activeTab: string;
   onTabChange: (tabId: string) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function Tabs({ tabs, activeTab, onTabChange, children }: TabsProps) {
@@ -26,7 +26,7 @@ export function Tabs({ tabs, activeTab, onTabChange, children }: TabsProps) {
           </button>
         ))}
       </div>
-      <div className="mt-4">{children}</div>
+      {children && <div className="mt-4">{children}</div>}
     </div>
   );
 }

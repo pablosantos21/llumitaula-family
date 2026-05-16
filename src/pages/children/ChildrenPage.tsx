@@ -143,9 +143,7 @@ export default function ChildrenPage() {
           }))}
           activeTab={selectedChildId}
           onTabChange={setSelectedChildId}
-        >
-          {/* Content is rendered below */}
-        </Tabs>
+        />
       )}
 
       {/* Daily Dashboard */}

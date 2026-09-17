@@ -97,7 +97,7 @@ export default function NotificacionesPage() {
     activeTab === "pending" ? pendingIncidents : pastIncidents;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 pb-32">
+    <div className="bg-gray-50 p-4 md:p-8">
       {/* Tabs */}
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab}>
         <div className="space-y-4">

@@ -14,11 +14,11 @@ export function DayNavigator({
   onNextDay,
   onToday,
 }: DayNavigatorProps) {
-  const dayName = currentDate.toLocaleDateString("ca-ES", {
+  const dayName = currentDate.toLocaleDateString("es-ES", {
     weekday: "long",
   });
 
-  const dayMonth = currentDate.toLocaleDateString("ca-ES", {
+  const dayMonth = currentDate.toLocaleDateString("es-ES", {
     day: "numeric",
     month: "short",
   });
@@ -36,7 +36,7 @@ export function DayNavigator({
         </Button>
 
         <button onClick={onToday} className="flex-1 text-center">
-          <p className="text-sm text-gray-500">Avui</p>
+          <p className="text-sm text-gray-500">Hoy</p>
           <p className="text-lg font-bold text-gray-900 capitalize">
             {dayName}
           </p>

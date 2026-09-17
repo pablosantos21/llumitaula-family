@@ -108,10 +108,10 @@ export default function ChildrenPage() {
         <CardContent className="py-12 text-center">
           <Baby className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No tens fills associats
+            No tienes hijos asociados
           </h3>
           <p className="text-gray-500">
-            Contacta amb el centre per associar els teus fills al teu compte.
+            Contacta con el centro para asociar tus hijos a tu cuenta.
           </p>
         </CardContent>
       </Card>
@@ -124,7 +124,7 @@ export default function ChildrenPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {selectedChild ? selectedChild.first_name : "Els meus fills"}
+          {selectedChild ? selectedChild.first_name : "Mis hijos"}
         </h1>
         {selectedChild && (
           <p className="text-gray-500 mt-1">

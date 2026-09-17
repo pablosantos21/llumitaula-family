@@ -47,7 +47,7 @@ export default function DashboardLayout() {
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Tancar sessió
+            Cerrar sesión
           </Button>
         </div>
       </aside>
@@ -73,7 +73,7 @@ export default function DashboardLayout() {
         <div className="p-6 flex items-center justify-between border-b border-gray-100">
           <div className="flex items-center gap-2">
             <Heart className="h-6 w-6 text-pink-600" />
-            <span className="font-bold text-gray-900">Família</span>
+            <span className="font-bold text-gray-900">Familia</span>
           </div>
           <button onClick={() => setIsMobileMenuOpen(false)}>
             <X className="h-6 w-6 text-gray-400" />
@@ -102,7 +102,7 @@ export default function DashboardLayout() {
             }}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Tancar sessió
+            Cerrar sesión
           </Button>
         </div>
       </aside>

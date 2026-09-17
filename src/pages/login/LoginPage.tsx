@@ -39,7 +39,7 @@ export default function LoginPage() {
                         Llum i Taula
                     </CardTitle>
                     <CardDescription>
-                        Accés per a famílies - Consulta la informació dels teus fills
+                        Acceso para familias - Consulta la información de tus hijos
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
@@ -50,7 +50,7 @@ export default function LoginPage() {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="email">Correu electrònic</Label>
+                            <Label htmlFor="email">Correo electrónico</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -62,7 +62,7 @@ export default function LoginPage() {
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">Contrasenya</Label>
+                                <Label htmlFor="password">Contraseña</Label>
                             </div>
                             <Input
                                 id="password"
@@ -79,7 +79,7 @@ export default function LoginPage() {
                             className="w-full"
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Iniciant sessió...' : 'Iniciar sessió'}
+                            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                         </Button>
                     </CardFooter>
                 </form>

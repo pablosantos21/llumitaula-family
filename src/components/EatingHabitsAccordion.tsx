@@ -17,10 +17,10 @@ export function EatingHabitsAccordion({
 }: EatingHabitsAccordionProps) {
   const getEatingTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      good: "Ha menjat molt bé",
-      normal: "Ha menjat normal",
-      poor: "Ha menjat poc",
-      allergic: "Reacció al·lèrgica",
+      good: "Ha comido muy bien",
+      normal: "Ha comido normal",
+      poor: "Ha comido poco",
+      allergic: "Reacción alérgica",
     };
     return labels[type] || type;
   };
@@ -49,7 +49,7 @@ export function EatingHabitsAccordion({
 
   return (
     <div className="mb-4">
-      <AccordionItem title="Com ha menjat?">
+      <AccordionItem title="¿Cómo ha comido?">
         <div className="space-y-4">
           {eatingRecord ? (
             <>
@@ -78,7 +78,7 @@ export function EatingHabitsAccordion({
               {observations && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                   <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
-                    Observacions del monitor
+                    Observaciones del monitor
                   </p>
                   <p className="text-blue-900 text-sm">{observations}</p>
                 </div>
@@ -87,7 +87,7 @@ export function EatingHabitsAccordion({
           ) : (
             <div className="text-center py-6">
               <p className="text-gray-500 text-sm">
-                No hi ha informació disponible sobre com ha menjat
+                No hay información disponible sobre cómo ha comido
               </p>
             </div>
           )}

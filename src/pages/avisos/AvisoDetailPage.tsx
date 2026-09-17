@@ -11,33 +11,33 @@ interface AvisoInfo {
 const avisoInfo: Record<string, AvisoInfo> = {
     dieta: {
         name: 'Dieta',
-        description: 'Informa de dietes especials o intoleràncies',
-        placeholder: 'Ex: Sense gluten, al·lèrgia a nous, vegetarià...',
+        description: 'Informa de dietas especiales o intolerancias',
+        placeholder: 'Ej: Sin gluten, alergia a frutos secos, vegetariano...',
     },
     ausencia: {
         name: 'Ausencia',
-        description: 'Comunica als monitors que el nen no vindrà',
-        placeholder: 'Especifica les dates i motiu de l\'absència...',
+        description: 'Comunica a los monitores que el niño no vendrá',
+        placeholder: 'Especifica las fechas y el motivo de la ausencia...',
     },
     bono: {
         name: 'Bono',
-        description: 'Gestiona els bonos de menjar',
-        placeholder: 'Detalla informació del bono...',
+        description: 'Gestiona los bonos de comida',
+        placeholder: 'Detalla la información del bono...',
     },
     'menu-especial': {
         name: 'Menú Especial',
-        description: 'Sol·licita menús adaptats a necessitats especials',
-        placeholder: 'Descriu les necessitats de menú especial...',
+        description: 'Solicita menús adaptados a necesidades especiales',
+        placeholder: 'Describe las necesidades del menú especial...',
     },
     'fuera-de-hora': {
         name: 'Fuera de Hora',
-        description: 'Controla les franges horaris',
-        placeholder: 'Especifica les hores fora de l\'horari habitual...',
+        description: 'Controla las franjas horarias',
+        placeholder: 'Especifica las horas fuera del horario habitual...',
     },
     historial: {
         name: 'Historial de Avisos',
-        description: 'Consulta l\'historial complet d\'avisos',
-        placeholder: 'Visualitzant historial...',
+        description: 'Consulta el historial completo de avisos',
+        placeholder: 'Visualizando historial...',
     },
 };
 
@@ -50,7 +50,7 @@ export default function AvisoDetailPage() {
     if (!aviso) {
         return (
             <div className="p-4 md:p-8 text-center">
-                <p className="text-gray-500">Aviso no trobat</p>
+                <p className="text-gray-500">Aviso no encontrado</p>
             </div>
         );
     }
@@ -65,7 +65,7 @@ export default function AvisoDetailPage() {
                 <div className="space-y-4">
                     <Card>
                         <CardContent className="p-6 text-center text-gray-500">
-                            <p>No hi ha avisos registrats</p>
+                            <p>No hay avisos registrados</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -75,7 +75,7 @@ export default function AvisoDetailPage() {
                     <div className="lg:col-span-2">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Nou aviso</CardTitle>
+                                <CardTitle>Nuevo aviso</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
@@ -111,13 +111,13 @@ export default function AvisoDetailPage() {
                     <div>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">Informació</CardTitle>
+                                <CardTitle className="text-lg">Información</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4 text-sm text-gray-600">
                                     <div>
                                         <p className="font-medium text-gray-900 mb-1">Destinatari</p>
-                                        <p>Els monitors del centre</p>
+                                        <p>Los monitores del centro</p>
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-900 mb-1">Urgència</p>
@@ -125,7 +125,7 @@ export default function AvisoDetailPage() {
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-900 mb-1">Confidencialitat</p>
-                                        <p>Solo per al personal del centre</p>
+                                        <p>Solo para el personal del centro</p>
                                     </div>
                                 </div>
                             </CardContent>

@@ -23,7 +23,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
             <Card className="mb-4">
                 <CardContent className="p-6 text-center">
                     <p className="text-gray-500 text-sm">
-                        No hi ha menú disponible per a aquest dia
+                        No hay menú disponible para este día
                     </p>
                 </CardContent>
             </Card>
@@ -34,13 +34,13 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
         <Card className="mb-4">
             <CardContent className="p-0">
                 <div className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 border-b border-pink-200">
-                    <h2 className="font-bold text-lg text-gray-900">Menú del dia</h2>
+                    <h2 className="font-bold text-lg text-gray-900">Menú del día</h2>
                 </div>
                 <div className="p-4 space-y-4">
                     {menu.first_course && (
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Primer plat
+                                Primer plato
                             </p>
                             <p className="text-gray-900 font-medium mt-1">
                                 {menu.first_course}
@@ -51,7 +51,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
                     {menu.second_course && (
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Segon plat
+                                Segundo plato
                             </p>
                             <p className="text-gray-900 font-medium mt-1">
                                 {menu.second_course}
@@ -62,7 +62,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
                     {menu.side && (
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Acompanyament
+                                Guarnición
                             </p>
                             <p className="text-gray-900 font-medium mt-1">
                                 {menu.side}
@@ -73,7 +73,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
                     {menu.salad && (
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Amanida
+                                Ensalada
                             </p>
                             <p className="text-gray-900 font-medium mt-1">
                                 {menu.salad}
@@ -84,7 +84,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
                     {menu.dessert && (
                         <div>
                             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                Postres
+                                Postre
                             </p>
                             <p className="text-gray-900 font-medium mt-1">
                                 {menu.dessert}

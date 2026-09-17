@@ -39,14 +39,17 @@ export default function NotificacionesPage() {
       lower.includes("al·lèrgia") ||
       lower.includes("alergia") ||
       lower.includes("urgència") ||
+      lower.includes("urgencia") ||
       lower.includes("emergencia")
     ) {
       return "critical";
     }
     if (
       lower.includes("comportament") ||
+      lower.includes("comportamiento") ||
       lower.includes("problema") ||
-      lower.includes("conflicte")
+      lower.includes("conflicte") ||
+      lower.includes("conflicto")
     ) {
       return "warning";
     }
@@ -101,7 +104,7 @@ export default function NotificacionesPage() {
           {isLoading ? (
             <Card>
               <CardContent className="p-8 text-center">
-                <p className="text-gray-500">Carregant...</p>
+                <p className="text-gray-500">Cargando...</p>
               </CardContent>
             </Card>
           ) : displayIncidents.length === 0 ? (
@@ -111,20 +114,20 @@ export default function NotificacionesPage() {
                   <>
                     <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-3" />
                     <p className="text-gray-700 font-medium">
-                      No hi ha notificacions pendents
+                      No hay notificaciones pendientes
                     </p>
                     <p className="text-gray-500 text-sm mt-1">
-                      Tots els avisos han estat respondits
+                      Todos los avisos han sido respondidos
                     </p>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
                     <p className="text-gray-700 font-medium">
-                      No hi ha historial
+                      No hay historial
                     </p>
                     <p className="text-gray-500 text-sm mt-1">
-                      No hi ha notificacions antigues per mostrar
+                      No hay notificaciones antiguas para mostrar
                     </p>
                   </>
                 )}
@@ -152,7 +155,7 @@ export default function NotificacionesPage() {
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">
                               {new Date(incident.date).toLocaleDateString(
-                                "ca-ES",
+                                "es-ES",
                                 {
                                   year: "numeric",
                                   month: "long",
@@ -174,7 +177,7 @@ export default function NotificacionesPage() {
                               className="flex items-center gap-1"
                             >
                               <Signature className="h-3 w-3" />
-                              Requereix signatura
+                              Requiere firma
                             </Badge>
                           )}
                           {incident.family_seen ? (
@@ -183,7 +186,7 @@ export default function NotificacionesPage() {
                               className="flex items-center gap-1"
                             >
                               <Eye className="h-3 w-3" />
-                              Vist
+                              Visto
                             </Badge>
                           ) : (
                             <Badge
@@ -191,7 +194,7 @@ export default function NotificacionesPage() {
                               className="flex items-center gap-1"
                             >
                               <EyeOff className="h-3 w-3" />
-                              No vist
+                              No visto
                             </Badge>
                           )}
                         </div>
@@ -199,7 +202,7 @@ export default function NotificacionesPage() {
                         {incident.family_response && (
                           <div className="bg-white p-4 rounded border border-gray-200 mb-4">
                             <p className="text-xs font-semibold text-gray-700 mb-2">
-                              La teva resposta:
+                              Tu respuesta:
                             </p>
                             <p className="text-sm text-gray-600">
                               {incident.family_response}

@@ -24,14 +24,17 @@ export function NotificationsAccordion({
       lower.includes("al·lèrgia") ||
       lower.includes("alergia") ||
       lower.includes("urgència") ||
+      lower.includes("urgencia") ||
       lower.includes("emergencia")
     ) {
       return "critical";
     }
     if (
       lower.includes("comportament") ||
+      lower.includes("comportamiento") ||
       lower.includes("problema") ||
-      lower.includes("conflicte")
+      lower.includes("conflicte") ||
+      lower.includes("conflicto")
     ) {
       return "warning";
     }
@@ -68,12 +71,12 @@ export function NotificationsAccordion({
 
   return (
     <div className="mb-4">
-      <AccordionItem title={`Notificacions (${todayIncidents.length})`}>
+      <AccordionItem title={`Notificaciones (${todayIncidents.length})`}>
         {todayIncidents.length === 0 ? (
           <div className="text-center py-6">
             <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-gray-700 font-medium">Tot va bé avui!</p>
-            <p className="text-gray-500 text-sm mt-1">No hi ha notificacions</p>
+            <p className="text-gray-700 font-medium">¡Todo va bien hoy!</p>
+            <p className="text-gray-500 text-sm mt-1">No hay notificaciones</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -102,7 +105,7 @@ export function NotificationsAccordion({
                             className="flex items-center gap-1 text-xs"
                           >
                             <Signature className="h-3 w-3" />
-                            Signatura
+                            Firma
                           </Badge>
                         )}
                         {incident.family_seen ? (
@@ -111,7 +114,7 @@ export function NotificationsAccordion({
                             className="flex items-center gap-1 text-xs"
                           >
                             <Eye className="h-3 w-3" />
-                            Vist
+                            Visto
                           </Badge>
                         ) : (
                           <Badge
@@ -119,7 +122,7 @@ export function NotificationsAccordion({
                             className="flex items-center gap-1 text-xs"
                           >
                             <EyeOff className="h-3 w-3" />
-                            No vist
+                            No visto
                           </Badge>
                         )}
                       </div>
@@ -127,7 +130,7 @@ export function NotificationsAccordion({
                       {incident.family_response && (
                         <div className="mt-3 bg-white p-2 rounded border border-gray-200">
                           <p className="text-xs font-semibold text-gray-700 mb-1">
-                            Resposta de la família:
+                            Respuesta de la familia:
                           </p>
                           <p className="text-xs text-gray-600">
                             {incident.family_response}

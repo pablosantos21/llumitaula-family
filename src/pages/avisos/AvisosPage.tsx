@@ -6,7 +6,6 @@ import {
     Ticket,
     Apple,
     Clock,
-    History,
 } from 'lucide-react';
 
 export default function AvisosPage() {
@@ -48,17 +47,10 @@ export default function AvisosPage() {
             icon: Clock,
             color: 'bg-pink-100 text-pink-600',
         },
-        {
-            id: 'historial',
-            name: 'Historial de Avisos',
-            description: 'Consulta el historial completo',
-            icon: History,
-            color: 'bg-gray-100 text-gray-600',
-        },
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8 pb-32">
+        <div className=" bg-gray-50 p-4 md:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {avisos.map((aviso) => {
                     const Icon = aviso.icon;

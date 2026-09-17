@@ -1,10 +1,45 @@
 import { supabase } from '../lib/supabase';
 
+export type UserRole = 'admin' | 'monitor' | 'parent' | 'worker' | 'supervisor';
+
 export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'parent';
+    role: UserRole;
+}
+
+type AuthUser = NonNullable<Awaited<ReturnType<typeof supabase.auth.getUser>>['data']['user']>;
+
+const VALID_ROLES: UserRole[] = ['admin', 'monitor', 'parent', 'worker', 'supervisor'];
+
+async function loadProfile(userId: string): Promise<{ role: UserRole | null; fullName: string | null }> {
+    const { data, error } = await supabase
+        .from('users')
+        .select('role, full_name')
+        .eq('id', userId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching user profile:', error);
+        return { role: null, fullName: null };
+    }
+
+    const role = data && VALID_ROLES.includes(data.role as UserRole) ? (data.role as UserRole) : null;
+
+    return { role, fullName: data?.full_name ?? null };
+}
+
+async function getParentUser(authUser: AuthUser): Promise<User | null> {
+    const profile = await loadProfile(authUser.id);
+    if (profile.role !== 'parent') return null;
+
+    return {
+        id: authUser.id,
+        name: profile.fullName || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User',
+        email: authUser.email || '',
+        role: profile.role,
+    };
 }
 
 export const AuthService = {
@@ -24,12 +59,13 @@ export const AuthService = {
             throw new Error('Login failed: No user returned');
         }
 
-        return {
-            id: data.user.id,
-            name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || 'User',
-            email: data.user.email || '',
-            role: 'parent',
-        };
+        const user = await getParentUser(data.user);
+        if (!user) {
+            await supabase.auth.signOut();
+            throw new Error('Acceso restringido: esta aplicación es solo para familias.');
+        }
+
+        return user;
     },
 
     logout: async () => {
@@ -44,23 +80,13 @@ export const AuthService = {
 
         if (!user) return null;
 
-        return {
-            id: user.id,
-            name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
-            email: user.email || '',
-            role: 'parent',
-        };
+        return getParentUser(user);
     },
 
     onAuthStateChange: (callback: (user: User | null) => void) => {
         return supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                callback({
-                    id: session.user.id,
-                    name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'User',
-                    email: session.user.email || '',
-                    role: 'parent',
-                });
+                void getParentUser(session.user).then(callback);
             } else {
                 callback(null);
             }

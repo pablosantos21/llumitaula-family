@@ -212,9 +212,7 @@ export default function NotificacionesPage() {
 
                         {activeTab === "pending" &&
                           incident.requires_family_signature && (
-                            <Button className="w-full bg-pink-600 hover:bg-pink-700">
-                              Responder
-                            </Button>
+                            <Button className="w-full">Responder</Button>
                           )}
                       </div>
                     </div>

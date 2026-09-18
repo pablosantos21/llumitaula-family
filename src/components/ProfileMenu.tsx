@@ -44,7 +44,7 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
         onClick={() => setIsOpen((open) => !open)}
         className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 transition-colors"
       >
-        <div className="h-9 w-9 rounded-full bg-pink-100 flex items-center justify-center text-pink-700 font-bold text-sm">
+        <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
           {user.name.charAt(0)}
         </div>
       </button>

@@ -32,7 +32,7 @@ export function BottomNavigation() {
                                 className={cn(
                                     "flex-1 flex items-center justify-center py-3 px-4 rounded-lg transition-colors",
                                     active
-                                        ? "bg-pink-100 text-pink-600"
+                                        ? "bg-primary-100 text-primary-600"
                                         : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                                 )}
                             >
@@ -55,7 +55,7 @@ export function BottomNavigation() {
                                 className={cn(
                                     "flex-1 flex items-center justify-center py-3 px-4 rounded-lg transition-colors",
                                     active
-                                        ? "bg-pink-100 text-pink-600"
+                                        ? "bg-primary-100 text-primary-600"
                                         : "text-gray-400 hover:text-gray-600 hover:bg-gray-100"
                                 )}
                             >

@@ -92,14 +92,14 @@ export default function AvisoDetailPage() {
                                     </label>
                                     <textarea
                                         placeholder={aviso.placeholder}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
                                         rows={6}
                                     />
                                 </div>
 
                                 <div className="flex gap-3 pt-4">
                                     <Button
-                                        className="flex-1 bg-pink-600 hover:bg-pink-700"
+                                        className="flex-1"
                                         onClick={() => navigate('/avisos')}
                                     >
                                         Enviar

@@ -27,12 +27,12 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 px-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-50 px-4">
             <Card className="w-full max-w-md">
                 <CardHeader className="space-y-1 text-center">
                     <div className="flex justify-center mb-4">
-                        <div className="bg-pink-100 p-3 rounded-full">
-                            <Heart className="h-8 w-8 text-pink-600" />
+                        <div className="bg-primary-100 p-3 rounded-full">
+                            <Heart className="h-8 w-8 text-primary-600" />
                         </div>
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">

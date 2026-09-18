@@ -12,7 +12,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
         return (
             <Card className="mb-4">
                 <CardContent className="p-6 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-pink-600" />
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
                 </CardContent>
             </Card>
         );
@@ -33,7 +33,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
     return (
         <Card className="mb-4">
             <CardContent className="p-0">
-                <div className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 border-b border-pink-200">
+                <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-4 border-b border-primary-200">
                     <h2 className="font-bold text-lg text-gray-900">Menú del día</h2>
                 </div>
                 <div className="p-4 space-y-4">

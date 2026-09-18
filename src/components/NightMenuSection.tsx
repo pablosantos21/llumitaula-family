@@ -12,7 +12,7 @@ export function NightMenuSection({ menu, isLoading }: NightMenuSectionProps) {
         return (
             <Card className="mb-4">
                 <CardContent className="p-6 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                    <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
                 </CardContent>
             </Card>
         );
@@ -33,7 +33,7 @@ export function NightMenuSection({ menu, isLoading }: NightMenuSectionProps) {
     return (
         <Card className="mb-4">
             <CardContent className="p-0">
-                <div className="bg-gradient-to-r from-indigo-50 to-indigo-100 p-4 border-b border-indigo-200">
+                <div className="bg-gradient-to-r from-primary-50 to-primary-100 p-4 border-b border-primary-200">
                     <h2 className="font-bold text-lg text-gray-900">
                         Menú complementario nocturno
                     </h2>

@@ -16,8 +16,8 @@ export default function DashboardLayout() {
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3 md:px-8 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="bg-pink-100 p-1.5 rounded-lg">
-            <Heart className="h-5 w-5 text-pink-600" />
+          <div className="bg-primary-100 p-1.5 rounded-lg">
+            <Heart className="h-5 w-5 text-primary-600" />
           </div>
           <span className="font-bold text-gray-900">Llum i Taula</span>
         </div>

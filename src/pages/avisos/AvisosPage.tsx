@@ -45,7 +45,7 @@ export default function AvisosPage() {
             name: 'Fuera de Hora',
             description: 'Controla las franjas horarias',
             icon: Clock,
-            color: 'bg-pink-100 text-pink-600',
+            color: 'bg-primary-100 text-primary-600',
         },
     ];
 

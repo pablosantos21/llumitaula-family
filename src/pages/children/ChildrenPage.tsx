@@ -53,11 +53,16 @@ export default function ChildrenPage() {
         const dateStr = currentDate.toISOString().split("T")[0];
 
         // Fetch menu
-        const menus = await MenuService.getMenusBySchoolAndDate(
-          selectedChild.classes?.school_id || "",
-          dateStr,
-        );
-        setMenu(menus.length > 0 ? menus[0].menus || null : null);
+        const schoolId = selectedChild.classes?.school_id;
+        if (!schoolId) {
+          setMenu(null);
+        } else {
+          const menus = await MenuService.getMenusBySchoolAndDate(
+            schoolId,
+            dateStr,
+          );
+          setMenu(menus.length > 0 ? menus[0].menus || null : null);
+        }
 
         // Fetch incidents for this child
         const allIncidents = await IncidentService.getIncidentsForMyChildren();

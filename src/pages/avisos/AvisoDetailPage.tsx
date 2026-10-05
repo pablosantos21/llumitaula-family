@@ -1,12 +1,21 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import type { ComponentType } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import SpecialMenuRequestForm from './SpecialMenuRequestForm';
+import type { FamilyRequestType } from '@/services/family-requests.service';
+
+interface AvisoForm {
+    requestType: FamilyRequestType;
+    Component: ComponentType<{ requestType: FamilyRequestType }>;
+}
 
 interface AvisoInfo {
     name: string;
     description: string;
     placeholder: string;
+    form?: AvisoForm;
 }
 
 const avisoInfo: Record<string, AvisoInfo> = {
@@ -24,6 +33,10 @@ const avisoInfo: Record<string, AvisoInfo> = {
         name: 'Menú Especial',
         description: 'Solicita menús adaptados a necesidades especiales',
         placeholder: 'Describe las necesidades del menú especial...',
+        form: {
+            requestType: 'special_menu',
+            Component: SpecialMenuRequestForm,
+        },
     },
     'fuera-de-hora': {
         name: 'Fuera de Hora',
@@ -57,6 +70,8 @@ export default function AvisoDetailPage() {
         );
     }
 
+    const RequestForm = aviso.form?.Component;
+
     return (
         <div className="bg-gray-50 p-4 md:p-8">
             <div className="flex items-center gap-3 mb-6">
@@ -76,39 +91,43 @@ export default function AvisoDetailPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Nuevo aviso</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Detalls
-                                    </label>
-                                    <textarea
-                                        placeholder={aviso.placeholder}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                                        rows={6}
-                                    />
-                                </div>
+                        {RequestForm && aviso.form ? (
+                            <RequestForm requestType={aviso.form.requestType} />
+                        ) : (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Nuevo aviso</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Detalles
+                                        </label>
+                                        <textarea
+                                            placeholder={aviso.placeholder}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                                            rows={6}
+                                        />
+                                    </div>
 
-                                <div className="flex gap-3 pt-4">
-                                    <Button
-                                        className="flex-1"
-                                        onClick={() => navigate('/avisos')}
-                                    >
-                                        Enviar
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        className="flex-1"
-                                        onClick={() => navigate('/avisos')}
-                                    >
-                                        Cancelar
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    <div className="flex gap-3 pt-4">
+                                        <Button
+                                            className="flex-1"
+                                            onClick={() => navigate('/avisos')}
+                                        >
+                                            Enviar
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1"
+                                            onClick={() => navigate('/avisos')}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
 
                     <div>
@@ -119,15 +138,15 @@ export default function AvisoDetailPage() {
                             <CardContent>
                                 <div className="space-y-4 text-sm text-gray-600">
                                     <div>
-                                        <p className="font-medium text-gray-900 mb-1">Destinatari</p>
+                                        <p className="font-medium text-gray-900 mb-1">Destinatario</p>
                                         <p>Los monitores del centro</p>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-900 mb-1">Urgència</p>
-                                        <p>Normal</p>
+                                        <p className="font-medium text-gray-900 mb-1">Revisión</p>
+                                        <p>Una persona del centro revisa tu solicitud; el menú no cambia automáticamente.</p>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-gray-900 mb-1">Confidencialitat</p>
+                                        <p className="font-medium text-gray-900 mb-1">Confidencialidad</p>
                                         <p>Solo para el personal del centro</p>
                                     </div>
                                 </div>

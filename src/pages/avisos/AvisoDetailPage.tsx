@@ -20,11 +20,6 @@ const avisoInfo: Record<string, AvisoInfo> = {
         description: 'Comunica a los monitores que el niño no vendrá',
         placeholder: 'Especifica las fechas y el motivo de la ausencia...',
     },
-    bono: {
-        name: 'Bono',
-        description: 'Gestiona los bonos de comida',
-        placeholder: 'Detalla la información del bono...',
-    },
     'menu-especial': {
         name: 'Menú Especial',
         description: 'Solicita menús adaptados a necesidades especiales',

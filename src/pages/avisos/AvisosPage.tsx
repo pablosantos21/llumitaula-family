@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
     Utensils,
     CalendarX,
-    Ticket,
     Apple,
     Clock,
 } from 'lucide-react';
@@ -25,13 +24,6 @@ export default function AvisosPage() {
             description: 'Comunica ausencias',
             icon: CalendarX,
             color: 'bg-blue-100 text-blue-600',
-        },
-        {
-            id: 'bono',
-            name: 'Bono',
-            description: 'Gestiona los bonos',
-            icon: Ticket,
-            color: 'bg-purple-100 text-purple-600',
         },
         {
             id: 'menu-especial',

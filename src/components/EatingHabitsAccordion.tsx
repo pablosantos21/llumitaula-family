@@ -1,18 +1,27 @@
 import { AccordionItem } from "@/components/ui/accordion";
-import { Utensils, Check, AlertCircle } from "lucide-react";
+import { Utensils, Check, AlertCircle, Loader2 } from "lucide-react";
+import type { EatingType } from "@/lib/meal-records-mapping";
 
-interface EatingRecord {
-  type: "good" | "normal" | "poor" | "allergic";
-  notes?: string;
+export interface EatingHabitItem {
+  id: string;
+  eatingType: EatingType;
+  mealTypeName?: string | null;
+  notes?: string | null;
 }
 
 interface EatingHabitsAccordionProps {
-  eatingRecord: EatingRecord | null;
+  records: EatingHabitItem[];
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   observations?: string;
 }
 
 export function EatingHabitsAccordion({
-  eatingRecord,
+  records,
+  isLoading = false,
+  error = null,
+  onRetry,
   observations,
 }: EatingHabitsAccordionProps) {
   const getEatingTypeLabel = (type: string) => {
@@ -51,29 +60,57 @@ export function EatingHabitsAccordion({
     <div className="mb-4">
       <AccordionItem title="¿Cómo ha comido?">
         <div className="space-y-4">
-          {eatingRecord ? (
-            <>
-              <div
-                className={`p-4 rounded-lg border-2 ${getEatingTypeColor(
-                  eatingRecord.type,
-                )}`}
-              >
-                <div className="flex items-center gap-3">
-                  {getEatingTypeIcon(eatingRecord.type)}
-                  <span className="font-semibold text-gray-900">
-                    {getEatingTypeLabel(eatingRecord.type)}
-                  </span>
-                </div>
-              </div>
-
-              {eatingRecord.notes && (
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                    Notes addicionals
-                  </p>
-                  <p className="text-gray-700 text-sm">{eatingRecord.notes}</p>
-                </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-6 space-y-3">
+              <p className="text-gray-500 text-sm">
+                No se pudo cargar la información de comidas
+              </p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="text-sm font-medium text-primary-600 hover:text-primary-700"
+                >
+                  Reintentar
+                </button>
               )}
+            </div>
+          ) : records.length > 0 ? (
+            <>
+              {records.map((record) => (
+                <div key={record.id} className="space-y-4">
+                  <div
+                    className={`p-4 rounded-lg border-2 ${getEatingTypeColor(
+                      record.eatingType,
+                    )}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {getEatingTypeIcon(record.eatingType)}
+                      <span className="font-semibold text-gray-900">
+                        {getEatingTypeLabel(record.eatingType)}
+                      </span>
+                    </div>
+                    {record.mealTypeName && (
+                      <p className="text-gray-500 text-sm mt-1">
+                        {record.mealTypeName}
+                      </p>
+                    )}
+                  </div>
+
+                  {record.notes && (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                        Notes addicionals
+                      </p>
+                      <p className="text-gray-700 text-sm">{record.notes}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
 
               {observations && (
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">

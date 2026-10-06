@@ -2,11 +2,20 @@ import { useEffect, useState } from "react";
 import { ChildService, type Child } from "@/services/children.service";
 import { MenuService, type Menu } from "@/services/menus.service";
 import { IncidentService, type Incident } from "@/services/incidents.service";
+import {
+  MealRecordService,
+  type MealRecord,
+} from "@/services/meal-records.service";
+import { mapMealStatusToEatingType } from "@/lib/meal-records-mapping";
+import { useMealCapability } from "@/hooks/useMealCapability";
 import { Tabs } from "@/components/ui/tabs";
 import { DayNavigator } from "@/components/DayNavigator";
 import { DailyMenuSection } from "@/components/DailyMenuSection";
 import { NightMenuSection } from "@/components/NightMenuSection";
-import { EatingHabitsAccordion } from "@/components/EatingHabitsAccordion";
+import {
+  EatingHabitsAccordion,
+  type EatingHabitItem,
+} from "@/components/EatingHabitsAccordion";
 import { NotificationsAccordion } from "@/components/NotificationsAccordion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Baby, Loader2 } from "lucide-react";
@@ -17,8 +26,18 @@ export default function ChildrenPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [menu, setMenu] = useState<Menu | null>(null);
   const [todayIncidents, setTodayIncidents] = useState<Incident[]>([]);
+  const [mealRecords, setMealRecords] = useState<MealRecord[]>([]);
+  const [isLoadingRecords, setIsLoadingRecords] = useState(false);
+  const [recordsError, setRecordsError] = useState<string | null>(null);
+  const [recordsAttempt, setRecordsAttempt] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
+
+  const dateStr = currentDate.toISOString().split("T")[0];
+  const mealCapability = useMealCapability(
+    selectedChildId || null,
+    dateStr,
+  );
 
   // Fetch children on mount
   useEffect(() => {
@@ -39,7 +58,7 @@ export default function ChildrenPage() {
     fetchChildren();
   }, []);
 
-  // Fetch menu and incidents when child or date changes
+  // Fetch menu and incidents when child or date changes (menu always visible)
   useEffect(() => {
     if (!selectedChildId) return;
 
@@ -49,8 +68,6 @@ export default function ChildrenPage() {
 
         const selectedChild = children.find((c) => c.id === selectedChildId);
         if (!selectedChild) return;
-
-        const dateStr = currentDate.toISOString().split("T")[0];
 
         // Fetch menu
         const schoolId = selectedChild.classes?.school_id;
@@ -81,7 +98,57 @@ export default function ChildrenPage() {
     };
 
     fetchData();
-  }, [selectedChildId, currentDate, children]);
+  }, [selectedChildId, currentDate, children, dateStr]);
+
+  // Fetch meal records only when capability is enabled (fail-closed otherwise).
+  // Disabled or loading or error states never emit a records query.
+  useEffect(() => {
+    if (!selectedChildId) return;
+    if (mealCapability.isLoading || mealCapability.error) return;
+    if (!mealCapability.enabled) return;
+
+    let cancelled = false;
+
+    const fetchRecords = async () => {
+      try {
+        setIsLoadingRecords(true);
+        setRecordsError(null);
+        const data = await MealRecordService.getByChildAndDate(
+          selectedChildId,
+          dateStr,
+        );
+        if (!cancelled) setMealRecords(data);
+      } catch (err) {
+        if (!cancelled) {
+          setRecordsError(
+            err instanceof Error ? err.message : "No se pudieron cargar los registros",
+          );
+        }
+      } finally {
+        if (!cancelled) setIsLoadingRecords(false);
+      }
+    };
+
+    fetchRecords();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedChildId,
+    dateStr,
+    mealCapability.isLoading,
+    mealCapability.error,
+    mealCapability.enabled,
+    recordsAttempt,
+  ]);
+
+  const eatingItems: EatingHabitItem[] = mealRecords.map((record) => ({
+    id: record.id,
+    eatingType: mapMealStatusToEatingType(record.status),
+    mealTypeName: record.meal_types?.name ?? null,
+    notes: record.notes,
+  }));
 
   const handlePreviousDay = () => {
     const newDate = new Date(currentDate);
@@ -164,7 +231,35 @@ export default function ChildrenPage() {
 
         <NightMenuSection menu={null} isLoading={isLoadingMenu} />
 
-        <EatingHabitsAccordion eatingRecord={null} observations={undefined} />
+        {mealCapability.isLoading ? (
+          <Card className="mb-4">
+            <CardContent className="p-6 flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-primary-600" />
+            </CardContent>
+          </Card>
+        ) : mealCapability.error ? (
+          <Card className="mb-4">
+            <CardContent className="p-6 text-center space-y-3">
+              <p className="text-gray-500 text-sm">
+                No se pudo cargar la configuración de comidas
+              </p>
+              <button
+                type="button"
+                onClick={mealCapability.retry}
+                className="text-sm font-medium text-primary-600 hover:text-primary-700"
+              >
+                Reintentar
+              </button>
+            </CardContent>
+          </Card>
+        ) : mealCapability.enabled ? (
+          <EatingHabitsAccordion
+            records={eatingItems}
+            isLoading={isLoadingRecords}
+            error={recordsError}
+            onRetry={() => setRecordsAttempt((value) => value + 1)}
+          />
+        ) : null}
 
         <NotificationsAccordion incidents={todayIncidents} />
       </div>

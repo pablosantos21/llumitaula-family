@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import SpecialMenuRequestForm from './SpecialMenuRequestForm';
+import DietRequestForm from './DietRequestForm';
 import type { FamilyRequestType } from '@/services/family-requests.service';
 
 interface AvisoForm {
@@ -23,6 +24,10 @@ const avisoInfo: Record<string, AvisoInfo> = {
         name: 'Dieta',
         description: 'Informa de dietas especiales o intolerancias',
         placeholder: 'Ej: Sin gluten, alergia a frutos secos, vegetariano...',
+        form: {
+            requestType: 'dieta',
+            Component: DietRequestForm,
+        },
     },
     ausencia: {
         name: 'Ausencia',

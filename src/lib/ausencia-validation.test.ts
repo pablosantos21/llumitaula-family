@@ -26,8 +26,10 @@ describe('motivo opcional de ausencia', () => {
 
     it('usa un mensaje predeterminado si no se indica motivo', () => {
         expect(buildAusenciaMessage()).toBe('Ausencia notificada');
-        expect(buildAusenciaMessage('   ')).toBe('Ausencia notificada');
+        expect(buildAusenciaMessage('')).toBe('Ausencia notificada');
         expect(buildAusenciaMessage('Enfermedad')).toBe('Enfermedad');
+        expect(buildAusenciaMessage('  Enfermedad  ')).toBe('  Enfermedad  ');
+        expect(buildAusenciaMessage('   ')).toBe('   ');
     });
 });
 

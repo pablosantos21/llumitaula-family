@@ -44,7 +44,7 @@ export function isAusenciaMessageValid(message: string): boolean {
 }
 
 export function buildAusenciaMessage(message = ''): string {
-    return message.trim() === '' ? AUSENCIA_DEFAULT_MESSAGE : message;
+    return message === '' ? AUSENCIA_DEFAULT_MESSAGE : message;
 }
 
 export interface AusenciaFormValue {

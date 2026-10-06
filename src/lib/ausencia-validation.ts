@@ -60,11 +60,7 @@ export interface AusenciaFormErrors {
 }
 
 export function isAusenciaFormValid(value: AusenciaFormValue, todayISO: string): boolean {
-    return (
-        value.childId !== '' &&
-        isAusenciaDateValid(value.dateISO, todayISO) &&
-        isAusenciaMessageValid(value.message ?? '')
-    );
+    return Object.keys(getAusenciaFormErrors(value, todayISO)).length === 0;
 }
 
 export function getAusenciaFormErrors(

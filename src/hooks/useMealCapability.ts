@@ -9,7 +9,7 @@ export interface MealCapabilityState {
 }
 
 /** Resuelve la capacidad efectiva de comidas para el hijo seleccionado, recalculando al cambiar de hijo. */
-export function useMealCapability(childId: string | null, refreshKey = ''): MealCapabilityState {
+export function useMealCapability(childId: string | null, dateISO = ''): MealCapabilityState {
     const [enabled, setEnabled] = useState(true);
     // Arranca cargando para no mostrar la sección antes de resolver (evita flash habilitado).
     const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +34,8 @@ export function useMealCapability(childId: string | null, refreshKey = ''): Meal
             } catch (err) {
                 if (!cancelled) {
                     // Fail-closed: ante error se ocultan los registros hasta reintentar.
+                    // Se fuerza enabled a false para que cualquier consumidor de `.enabled` también cierre.
+                    setEnabled(false);
                     setError(err instanceof Error ? err.message : 'No se pudo cargar la configuración');
                 }
             } finally {
@@ -46,7 +48,7 @@ export function useMealCapability(childId: string | null, refreshKey = ''): Meal
         return () => {
             cancelled = true;
         };
-    }, [childId, attempt, refreshKey]);
+    }, [childId, attempt, dateISO]);
 
     if (!childId) {
         return { enabled: true, isLoading: false, error: null, retry };

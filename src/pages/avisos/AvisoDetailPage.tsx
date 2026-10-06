@@ -130,29 +130,7 @@ export default function AvisoDetailPage() {
                         )}
                     </div>
 
-                    <div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="text-lg">Información</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4 text-sm text-gray-600">
-                                    <div>
-                                        <p className="font-medium text-gray-900 mb-1">Destinatario</p>
-                                        <p>Los monitores del centro</p>
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900 mb-1">Revisión</p>
-                                        <p>Una persona del centro revisa tu solicitud; el menú no cambia automáticamente.</p>
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900 mb-1">Confidencialidad</p>
-                                        <p>Solo para el personal del centro</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
+
                 </div>
         </div>
     );

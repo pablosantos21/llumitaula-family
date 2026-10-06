@@ -1,4 +1,6 @@
-export const DIET_DESCRIPTION_MAX_LENGTH = 1000;
+import { MESSAGE_MAX_LENGTH } from '@/services/family-requests.service';
+
+export const DIET_DESCRIPTION_MAX_LENGTH = MESSAGE_MAX_LENGTH;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 

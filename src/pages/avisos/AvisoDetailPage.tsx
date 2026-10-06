@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import SpecialMenuRequestForm from './SpecialMenuRequestForm';
 import DietRequestForm from './DietRequestForm';
+import FueraDeHoraRequestForm from './FueraDeHoraRequestForm';
 import type { FamilyRequestType } from '@/services/family-requests.service';
 
 interface AvisoForm {
@@ -45,8 +46,12 @@ const avisoInfo: Record<string, AvisoInfo> = {
     },
     'fuera-de-hora': {
         name: 'Fuera de Hora',
-        description: 'Controla las franjas horarias',
+        description: 'Avisa de una salida antes o después del horario habitual',
         placeholder: 'Especifica las horas fuera del horario habitual...',
+        form: {
+            requestType: 'fuera_de_hora',
+            Component: FueraDeHoraRequestForm,
+        },
     },
 };
 

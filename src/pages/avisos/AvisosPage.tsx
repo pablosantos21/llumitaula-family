@@ -35,7 +35,7 @@ export default function AvisosPage() {
         {
             id: 'fuera-de-hora',
             name: 'Fuera de Hora',
-            description: 'Controla las franjas horarias',
+            description: 'Avisa de salidas fuera de horario',
             icon: Clock,
             color: 'bg-primary-100 text-primary-600',
         },

@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import SpecialMenuRequestForm from './SpecialMenuRequestForm';
 import DietRequestForm from './DietRequestForm';
 import FueraDeHoraRequestForm from './FueraDeHoraRequestForm';
+import AusenciaRequestForm from './AusenciaRequestForm';
 import type { FamilyRequestType } from '@/services/family-requests.service';
 
 interface AvisoForm {
@@ -34,6 +35,10 @@ const avisoInfo: Record<string, AvisoInfo> = {
         name: 'Ausencia',
         description: 'Comunica a los monitores que el niño no vendrá',
         placeholder: 'Especifica las fechas y el motivo de la ausencia...',
+        form: {
+            requestType: 'ausencia',
+            Component: AusenciaRequestForm,
+        },
     },
     'menu-especial': {
         name: 'Menú Especial',

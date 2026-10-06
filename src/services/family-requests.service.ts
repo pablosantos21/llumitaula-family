@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase';
 
-export type FamilyRequestType = 'special_menu' | 'dieta' | 'fuera_de_hora';
+export type FamilyRequestType = 'special_menu' | 'dieta' | 'fuera_de_hora' | 'ausencia';
 export type ContactMethod = 'email' | 'telefono' | 'otro';
 
 /** Dirección de la salida fuera de horario respecto al horario habitual. */

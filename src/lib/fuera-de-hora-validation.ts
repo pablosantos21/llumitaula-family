@@ -125,7 +125,7 @@ export function getFueraDeHoraFormErrors(
     return errors;
 }
 
-/** Error de unicidad Postgres (duplicado hijo+fecha+tipo). */
+/** Error de unicidad Postgres (duplicado hijo+fecha+dirección, issue #16). */
 export function isFueraDeHoraDuplicateError(error: unknown): boolean {
     if (typeof error !== 'object' || error === null) return false;
     return (error as { code?: unknown }).code === '23505';

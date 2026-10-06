@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    FUERA_DE_HORA_DUPLICATE_ERROR,
     FUERA_DE_HORA_MESSAGE_MAX_LENGTH,
     buildFueraDeHoraMessage,
     getFueraDeHoraFormErrors,
@@ -218,7 +219,13 @@ describe('isFueraDeHoraDirection', () => {
     });
 });
 
-describe('duplicado fuera-de-hora (hijo+fecha)', () => {
+describe('duplicado fuera-de-hora (hijo+fecha+dirección, issue #16)', () => {
+    it('usa el mensaje exacto de la issue #16 ante un duplicado', () => {
+        expect(FUERA_DE_HORA_DUPLICATE_ERROR).toBe(
+            'Ya avisaste una salida antes/después para este día',
+        );
+    });
+
     it('reconoce el error de unicidad 23505 como duplicado', () => {
         expect(isFueraDeHoraDuplicateError({ code: '23505' })).toBe(true);
         expect(isFueraDeHoraDuplicateError({ code: '42501' })).toBe(false);

@@ -43,8 +43,9 @@ export const FamilyRequestService = {
 
         if (error) {
             console.error('Error creating family request:', error);
-            // Preserva el código Postgres (23505 = duplicado hijo+fecha+tipo,
-            // 42501 = RLS padre-hijo) para mensajes claros en el formulario.
+            // Preserva el código Postgres (23505 = duplicado: hijo+fecha+tipo,
+            // o hijo+fecha+dirección en fuera_de_hora; 42501 = RLS padre-hijo)
+            // para mensajes claros en el formulario.
             throw new FamilyRequestError(error.message, (error as { code?: string }).code);
         }
     },

@@ -1,9 +1,16 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { IncidentService, type Incident } from "@/services/incidents.service";
+import { formatIncidentDateEs } from "@/lib/date";
+import {
+  getUnseenIncidentIds,
+  INCIDENT_RESPONSE_MAX_LENGTH,
+  isFamilyResponseValid,
+} from "@/lib/incident-response";
 import { Tabs } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertCircle,
   AlertTriangle,
@@ -17,21 +24,114 @@ export default function NotificacionesPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [activeTab, setActiveTab] = useState<string>("pending");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState("");
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
+  const [responseError, setResponseError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchIncidents = async () => {
       try {
+        setIsLoading(true);
+        setLoadError(null);
         const data = await IncidentService.getIncidentsForMyChildren();
+        if (cancelled) return;
         setIncidents(data);
+
+        const unseenIds = getUnseenIncidentIds(data);
+        if (unseenIds.length > 0) {
+          const unseenSet = new Set(unseenIds);
+          IncidentService.markIncidentsAsSeen(unseenIds)
+            .then(() => {
+              if (!cancelled) {
+                setIncidents((prev) =>
+                  prev.map((incident) =>
+                    unseenSet.has(incident.id)
+                      ? { ...incident, family_seen: true }
+                      : incident,
+                  ),
+                );
+              }
+            })
+            .catch((err) => {
+              console.error("Error marking incidents as seen:", err);
+            });
+        }
       } catch (err) {
         console.error("Error fetching incidents:", err);
+        if (!cancelled) {
+          setLoadError(
+            err instanceof Error
+              ? err.message
+              : "No se pudieron cargar las notificaciones",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchIncidents();
-  }, []);
+    void fetchIncidents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadAttempt]);
+
+  const handleOpenResponseForm = (incidentId: string) => {
+    setRespondingId(incidentId);
+    setResponseText("");
+    setResponseError(null);
+  };
+
+  const handleCancelResponse = () => {
+    setRespondingId(null);
+    setResponseText("");
+    setResponseError(null);
+  };
+
+  const handleSubmitResponse = async (
+    event: FormEvent<HTMLFormElement>,
+    incidentId: string,
+  ) => {
+    event.preventDefault();
+    if (!isFamilyResponseValid(responseText)) {
+      setResponseError(
+        `La respuesta no puede superar los ${INCIDENT_RESPONSE_MAX_LENGTH} caracteres`,
+      );
+      return;
+    }
+
+    try {
+      setIsSubmittingResponse(true);
+      setResponseError(null);
+      const updated = await IncidentService.respondToIncident(
+        incidentId,
+        responseText,
+      );
+      setIncidents((prev) =>
+        prev.map((incident) =>
+          incident.id === incidentId ? { ...incident, ...updated } : incident,
+        ),
+      );
+      setRespondingId(null);
+      setResponseText("");
+    } catch (err) {
+      setResponseError(
+        err instanceof Error
+          ? err.message
+          : "No se pudo enviar la respuesta. Inténtalo de nuevo.",
+      );
+    } finally {
+      setIsSubmittingResponse(false);
+    }
+  };
 
   const getIncidentSeverity = (description: string) => {
     const lower = description.toLowerCase();
@@ -107,6 +207,26 @@ export default function NotificacionesPage() {
                 <p className="text-gray-500">Cargando...</p>
               </CardContent>
             </Card>
+          ) : loadError ? (
+            <Card>
+              <CardContent className="p-8 text-center space-y-4">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+                <div>
+                  <p className="text-gray-900 font-medium">
+                    No se pudieron cargar las notificaciones
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Comprueba tu conexión e inténtalo de nuevo.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => setLoadAttempt((value) => value + 1)}
+                >
+                  Reintentar
+                </Button>
+              </CardContent>
+            </Card>
           ) : displayIncidents.length === 0 ? (
             <Card>
               <CardContent className="p-8 text-center">
@@ -154,14 +274,7 @@ export default function NotificacionesPage() {
                               {incident.children?.last_name}
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">
-                              {new Date(incident.date).toLocaleDateString(
-                                "es-ES",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )}
+                              {formatIncidentDateEs(incident.date)}
                             </p>
                           </div>
                         </div>
@@ -211,9 +324,80 @@ export default function NotificacionesPage() {
                         )}
 
                         {activeTab === "pending" &&
-                          incident.requires_family_signature && (
-                            <Button className="w-full">Responder</Button>
-                          )}
+                          incident.requires_family_signature &&
+                          (respondingId === incident.id ? (
+                            <form
+                              onSubmit={(e) =>
+                                void handleSubmitResponse(e, incident.id)
+                              }
+                              className="space-y-3 bg-white p-4 rounded-lg border border-gray-200"
+                            >
+                              <div>
+                                <Textarea
+                                  value={responseText}
+                                  onChange={(e) => {
+                                    setResponseText(e.target.value);
+                                    if (responseError) setResponseError(null);
+                                  }}
+                                  placeholder="Escribe un comentario opcional (si lo dejas vacío se registrará como «Enterado / Firmado»)"
+                                  rows={3}
+                                  disabled={isSubmittingResponse}
+                                  aria-label="Respuesta de la familia"
+                                />
+                                <div className="flex justify-end mt-1">
+                                  <span
+                                    className={`text-xs ${
+                                      !isFamilyResponseValid(responseText)
+                                        ? "text-red-600"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    {responseText.trim().length}/
+                                    {INCIDENT_RESPONSE_MAX_LENGTH}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {responseError && (
+                                <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-100">
+                                  {responseError}
+                                </div>
+                              )}
+
+                              <div className="flex gap-2">
+                                <Button
+                                  type="submit"
+                                  className="flex-1"
+                                  disabled={
+                                    isSubmittingResponse ||
+                                    !isFamilyResponseValid(responseText)
+                                  }
+                                >
+                                  {isSubmittingResponse
+                                    ? "Enviando..."
+                                    : "Firmar y enviar"}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={handleCancelResponse}
+                                  disabled={isSubmittingResponse}
+                                >
+                                  Cancelar
+                                </Button>
+                              </div>
+                            </form>
+                          ) : (
+                            <Button
+                              type="button"
+                              className="w-full"
+                              onClick={() =>
+                                handleOpenResponseForm(incident.id)
+                              }
+                            >
+                              Responder
+                            </Button>
+                          ))}
                       </div>
                     </div>
                   </CardContent>

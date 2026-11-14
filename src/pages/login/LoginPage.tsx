@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { getLoginErrorMessage } from '../../services/auth.service'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
@@ -11,8 +12,12 @@ export default function LoginPage() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
-    const { login, isLoading } = useAuth()
+    const { login, isLoading, isAuthenticated } = useAuth()
     const navigate = useNavigate()
+
+    if (isAuthenticated) {
+        return <Navigate to="/children" replace />
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -20,9 +25,9 @@ export default function LoginPage() {
 
         try {
             await login(email, password)
-            navigate('/')
-        } catch {
-            setError('Credenciales incorrectas')
+            navigate('/children')
+        } catch (err) {
+            setError(getLoginErrorMessage(err))
         }
     }
 

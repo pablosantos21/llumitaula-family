@@ -8,8 +8,13 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Error signing out:", err);
+    } finally {
+      navigate("/login", { replace: true });
+    }
   };
 
   return (

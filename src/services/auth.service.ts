@@ -13,6 +13,42 @@ type AuthUser = NonNullable<Awaited<ReturnType<typeof supabase.auth.getUser>>['d
 
 const VALID_ROLES: UserRole[] = ['admin', 'monitor', 'parent', 'worker', 'supervisor'];
 
+export const RESTRICTED_ACCESS_MESSAGE =
+    'Acceso restringido: esta aplicación es solo para familias.';
+export const PROFILE_LOAD_ERROR_MESSAGE =
+    'No se pudo verificar el perfil del usuario. Comprueba tu conexión e inténtalo de nuevo.';
+export const CONNECTION_ERROR_MESSAGE =
+    'Error de conexión. Comprueba tu conexión e inténtalo de nuevo.';
+export const INVALID_CREDENTIALS_MESSAGE = 'Credenciales incorrectas';
+
+/** Traduce errores de autenticación y perfil a mensajes comprensibles en español. */
+export function getLoginErrorMessage(error: unknown): string {
+    const message =
+        error instanceof Error
+            ? error.message
+            : typeof error === 'object' &&
+                error !== null &&
+                'message' in error &&
+                typeof (error as { message: unknown }).message === 'string'
+              ? (error as { message: string }).message
+              : typeof error === 'string'
+                ? error
+                : '';
+
+    if (message === RESTRICTED_ACCESS_MESSAGE) {
+        return RESTRICTED_ACCESS_MESSAGE;
+    }
+
+    if (
+        message === PROFILE_LOAD_ERROR_MESSAGE ||
+        /failed to fetch|network|fetch|timeout|econnrefused|connection/i.test(message)
+    ) {
+        return CONNECTION_ERROR_MESSAGE;
+    }
+
+    return INVALID_CREDENTIALS_MESSAGE;
+}
+
 async function loadProfile(userId: string): Promise<{ role: UserRole | null; fullName: string | null }> {
     const { data, error } = await supabase
         .from('users')
@@ -22,7 +58,7 @@ async function loadProfile(userId: string): Promise<{ role: UserRole | null; ful
 
     if (error) {
         console.error('Error fetching user profile:', error);
-        return { role: null, fullName: null };
+        throw new Error(PROFILE_LOAD_ERROR_MESSAGE);
     }
 
     const role = data && VALID_ROLES.includes(data.role as UserRole) ? (data.role as UserRole) : null;
@@ -44,7 +80,6 @@ async function getParentUser(authUser: AuthUser): Promise<User | null> {
 
 export const AuthService = {
     login: async (email: string, password: string): Promise<User> => {
-        console.log('Attempting login for:', email);
         const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -62,7 +97,7 @@ export const AuthService = {
         const user = await getParentUser(data.user);
         if (!user) {
             await supabase.auth.signOut();
-            throw new Error('Acceso restringido: esta aplicación es solo para familias.');
+            throw new Error(RESTRICTED_ACCESS_MESSAGE);
         }
 
         return user;
@@ -86,7 +121,11 @@ export const AuthService = {
     onAuthStateChange: (callback: (user: User | null) => void) => {
         return supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                void getParentUser(session.user).then(callback);
+                void getParentUser(session.user)
+                    .then(callback)
+                    .catch((err) => {
+                        console.error('Error refreshing user profile:', err);
+                    });
             } else {
                 callback(null);
             }

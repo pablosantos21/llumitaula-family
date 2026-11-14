@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { isSameLocalDay } from "@/lib/date";
 
 interface DayNavigatorProps {
   currentDate: Date;
@@ -14,11 +15,7 @@ export function DayNavigator({
   onNextDay,
   onToday,
 }: DayNavigatorProps) {
-  const now = new Date();
-  const isToday =
-    currentDate.getFullYear() === now.getFullYear() &&
-    currentDate.getMonth() === now.getMonth() &&
-    currentDate.getDate() === now.getDate();
+  const isToday = isSameLocalDay(currentDate);
 
   const dayName = currentDate.toLocaleDateString("es-ES", {
     weekday: "long",

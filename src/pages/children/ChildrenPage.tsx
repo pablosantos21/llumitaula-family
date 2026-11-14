@@ -7,6 +7,7 @@ import {
   type MealRecord,
 } from "@/services/meal-records.service";
 import { mapMealStatusToEatingType } from "@/lib/meal-records-mapping";
+import { extractISODate, toLocalISODate } from "@/lib/date";
 import { useMealCapability } from "@/hooks/useMealCapability";
 import { Tabs } from "@/components/ui/tabs";
 import { DayNavigator } from "@/components/DayNavigator";
@@ -33,7 +34,7 @@ export default function ChildrenPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMenu, setIsLoadingMenu] = useState(false);
 
-  const dateStr = currentDate.toISOString().split("T")[0];
+  const dateStr = toLocalISODate(currentDate);
   const mealCapability = useMealCapability(
     selectedChildId || null,
     dateStr,
@@ -86,8 +87,7 @@ export default function ChildrenPage() {
         const childIncidents = allIncidents.filter(
           (incident) =>
             incident.child_id === selectedChildId &&
-            new Date(incident.date).toDateString() ===
-              currentDate.toDateString(),
+            extractISODate(incident.date) === dateStr,
         );
         setTodayIncidents(childIncidents);
       } catch (err) {
@@ -98,7 +98,7 @@ export default function ChildrenPage() {
     };
 
     fetchData();
-  }, [selectedChildId, currentDate, children, dateStr]);
+  }, [selectedChildId, children, dateStr]);
 
   // Fetch meal records only when capability is enabled (fail-closed otherwise).
   // Disabled or loading or error states never emit a records query.

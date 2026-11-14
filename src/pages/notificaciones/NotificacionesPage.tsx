@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { IncidentService, type Incident } from "@/services/incidents.service";
+import { formatIncidentDateEs } from "@/lib/date";
 import { Tabs } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -154,14 +155,7 @@ export default function NotificacionesPage() {
                               {incident.children?.last_name}
                             </h3>
                             <p className="text-sm text-gray-500 mt-1">
-                              {new Date(incident.date).toLocaleDateString(
-                                "es-ES",
-                                {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                },
-                              )}
+                              {formatIncidentDateEs(incident.date)}
                             </p>
                           </div>
                         </div>

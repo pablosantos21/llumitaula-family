@@ -57,41 +57,10 @@ export const IncidentService = {
             throw new Error(error.message);
         }
 
-        return (data as unknown as Incident[]) || [];
-    },
-
-    getIncidentsByChild: async (childId: string): Promise<Incident[]> => {
-        const { data, error } = await supabase
-            .from('incidents')
-            .select(`
-                id,
-                child_id,
-                date,
-                description,
-                created_at,
-                monitor_id,
-                reviewed,
-                requires_family_signature,
-                send_notification,
-                family_seen,
-                family_response,
-                family_responded_at,
-                monitor_validated,
-                children (
-                    id,
-                    first_name,
-                    last_name
-                )
-            `)
-            .eq('child_id', childId)
-            .order('date', { ascending: false });
-
-        if (error) {
-            console.error('Error fetching incidents:', error);
-            throw new Error(error.message);
-        }
-
-        return (data as unknown as Incident[]) || [];
+        return (data ?? []).map((row) => ({
+            ...row,
+            children: row.children ?? undefined,
+        }));
     },
 
     respondToIncident: async (

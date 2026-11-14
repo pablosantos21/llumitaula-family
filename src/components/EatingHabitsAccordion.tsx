@@ -104,7 +104,7 @@ export function EatingHabitsAccordion({
                   {record.notes && (
                     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                        Notes addicionals
+                        Notas adicionales
                       </p>
                       <p className="text-gray-700 text-sm">{record.notes}</p>
                     </div>

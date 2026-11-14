@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChildService, type Child } from "@/services/children.service";
 import { MenuService, type Menu } from "@/services/menus.service";
 import { IncidentService, type Incident } from "@/services/incidents.service";
@@ -166,6 +166,15 @@ export default function ChildrenPage() {
     setCurrentDate(new Date());
   };
 
+  const handleIncidentsSeen = useCallback((seenIds: string[]) => {
+    const seenSet = new Set(seenIds);
+    setTodayIncidents((prev) =>
+      prev.map((incident) =>
+        seenSet.has(incident.id) ? { ...incident, family_seen: true } : incident,
+      ),
+    );
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -261,7 +270,10 @@ export default function ChildrenPage() {
           />
         ) : null}
 
-        <NotificationsAccordion incidents={todayIncidents} />
+        <NotificationsAccordion
+          incidents={todayIncidents}
+          onIncidentsSeen={handleIncidentsSeen}
+        />
       </div>
     </div>
   );

@@ -1,4 +1,9 @@
 import { supabase } from '../lib/supabase';
+import {
+    buildFamilyResponse,
+    INCIDENT_RESPONSE_MAX_LENGTH,
+    isFamilyResponseValid,
+} from '../lib/incident-response';
 
 export interface Incident {
     id: string;
@@ -87,5 +92,54 @@ export const IncidentService = {
         }
 
         return (data as unknown as Incident[]) || [];
+    },
+
+    respondToIncident: async (
+        incidentId: string,
+        responseText: string,
+    ): Promise<{
+        family_response: string;
+        family_responded_at: string;
+        family_seen: boolean;
+    }> => {
+        if (!isFamilyResponseValid(responseText)) {
+            throw new Error(
+                `La respuesta no puede superar los ${INCIDENT_RESPONSE_MAX_LENGTH} caracteres`,
+            );
+        }
+
+        const family_response = buildFamilyResponse(responseText);
+        const family_responded_at = new Date().toISOString();
+        const family_seen = true;
+
+        const { error } = await supabase
+            .from('incidents')
+            .update({
+                family_response,
+                family_responded_at,
+                family_seen,
+            })
+            .eq('id', incidentId);
+
+        if (error) {
+            console.error('Error responding to incident:', error);
+            throw new Error(error.message);
+        }
+
+        return { family_response, family_responded_at, family_seen };
+    },
+
+    markIncidentsAsSeen: async (incidentIds: string[]): Promise<void> => {
+        if (incidentIds.length === 0) return;
+
+        const { error } = await supabase
+            .from('incidents')
+            .update({ family_seen: true })
+            .in('id', incidentIds);
+
+        if (error) {
+            console.error('Error marking incidents as seen:', error);
+            throw new Error(error.message);
+        }
     },
 };

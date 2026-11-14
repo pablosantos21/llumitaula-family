@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { AccordionItem } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import type { Incident } from "@/services/incidents.service";
+import { getUnseenIncidentIds } from "@/lib/incident-response";
+import { IncidentService, type Incident } from "@/services/incidents.service";
 import {
   AlertCircle,
   AlertTriangle,
@@ -13,11 +15,46 @@ import {
 
 interface NotificationsAccordionProps {
   incidents: Incident[];
+  onIncidentsSeen?: (ids: string[]) => void;
 }
 
 export function NotificationsAccordion({
   incidents,
+  onIncidentsSeen,
 }: NotificationsAccordionProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const markedIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const unseenIds = getUnseenIncidentIds(incidents).filter(
+      (id) => !markedIdsRef.current.has(id),
+    );
+    if (unseenIds.length === 0) return;
+
+    for (const id of unseenIds) {
+      markedIdsRef.current.add(id);
+    }
+
+    let cancelled = false;
+    IncidentService.markIncidentsAsSeen(unseenIds)
+      .then(() => {
+        if (!cancelled) {
+          onIncidentsSeen?.(unseenIds);
+        }
+      })
+      .catch((err) => {
+        console.error("Error marking incidents as seen:", err);
+        for (const id of unseenIds) {
+          markedIdsRef.current.delete(id);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, incidents, onIncidentsSeen]);
   const getIncidentSeverity = (description: string) => {
     const lower = description.toLowerCase();
     if (
@@ -66,7 +103,10 @@ export function NotificationsAccordion({
 
   return (
     <div className="mb-4">
-      <AccordionItem title={`Notificaciones (${incidents.length})`}>
+      <AccordionItem
+        title={`Notificaciones (${incidents.length})`}
+        onOpenChange={setIsOpen}
+      >
         {incidents.length === 0 ? (
           <div className="text-center py-6">
             <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />

@@ -2,14 +2,20 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Heart } from "lucide-react";
 import { ProfileMenu } from "../components/ProfileMenu";
+import { BottomNavigation } from "../components/BottomNavigation";
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Error signing out:", err);
+    } finally {
+      navigate("/login", { replace: true });
+    }
   };
 
   return (
@@ -28,6 +34,7 @@ export default function DashboardLayout() {
       <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-32">
         <Outlet />
       </main>
+      <BottomNavigation />
     </div>
   );
 }

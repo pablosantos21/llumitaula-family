@@ -44,19 +44,35 @@ export function isAusenciaMessageValid(message: string): boolean {
 }
 
 export function buildAusenciaMessage(message = ''): string {
-    return message === '' ? AUSENCIA_DEFAULT_MESSAGE : message;
+    const trimmed = message.trim();
+    return trimmed === '' ? AUSENCIA_DEFAULT_MESSAGE : trimmed;
 }
 
 export interface AusenciaFormValue {
     childId: string;
-    dateISO: string;
+    dateISO?: string;
+    dates?: string[];
     message?: string;
 }
 
 export interface AusenciaFormErrors {
     childId?: string;
     dateISO?: string;
+    dates?: string;
     message?: string;
+}
+
+export function isAusenciaDatesListValid(
+    dates: readonly string[],
+    todayISO: string
+): boolean {
+    if (dates.length === 0) {
+        return false;
+    }
+    if (new Set(dates).size !== dates.length) {
+        return false;
+    }
+    return dates.every((dateISO) => isAusenciaDateValid(dateISO, todayISO));
 }
 
 export function isAusenciaFormValid(value: AusenciaFormValue, todayISO: string): boolean {
@@ -69,15 +85,39 @@ export function getAusenciaFormErrors(
 ): AusenciaFormErrors {
     const errors: AusenciaFormErrors = {};
     if (value.childId === '') errors.childId = 'Selecciona un hijo';
-    if (!isISOCalendarDate(value.dateISO)) {
-        errors.dateISO = 'Elige una fecha';
-    } else if (value.dateISO < todayISO) {
-        errors.dateISO = 'La fecha no puede ser anterior a hoy';
-    } else if (!isAusenciaDateValid(value.dateISO, todayISO)) {
-        errors.dateISO = 'Elige una fecha válida';
+
+    if (value.dates !== undefined) {
+        if (value.dates.length === 0) {
+            errors.dates = 'Elige al menos una fecha';
+        } else if (new Set(value.dates).size !== value.dates.length) {
+            errors.dates = 'Hay fechas duplicadas en la selección';
+        } else if (!value.dates.every((dateISO) => isAusenciaDateValid(dateISO, todayISO))) {
+            errors.dates = 'Todas las fechas deben ser hoy o posteriores';
+        }
+    } else {
+        const dateISO = value.dateISO ?? '';
+        if (!isISOCalendarDate(dateISO)) {
+            errors.dateISO = 'Elige una fecha';
+        } else if (dateISO < todayISO) {
+            errors.dateISO = 'La fecha no puede ser anterior a hoy';
+        } else if (!isAusenciaDateValid(dateISO, todayISO)) {
+            errors.dateISO = 'Elige una fecha válida';
+        }
     }
+
     if (!isAusenciaMessageValid(value.message ?? '')) {
         errors.message = `El mensaje no puede superar los ${AUSENCIA_MESSAGE_MAX_LENGTH} caracteres`;
     }
     return errors;
+}
+
+export function formatAusenciaDateLong(dateISO: string): string {
+    const [year, month, day] = dateISO.split('-').map(Number);
+    if (!year || !month || !day) return dateISO;
+    return new Date(year, month - 1, day).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
 }

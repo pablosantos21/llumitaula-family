@@ -1,6 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import { AccordionItem } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import type { Incident } from "@/services/incidents.service";
+import { getUnseenIncidentIds } from "@/lib/incident-response";
+import {
+  getIncidentSeverity,
+  getSeverityColor,
+  type IncidentSeverity,
+} from "@/lib/incident-severity";
+import { IncidentService, type Incident } from "@/services/incidents.service";
 import {
   AlertCircle,
   AlertTriangle,
@@ -13,46 +20,47 @@ import {
 
 interface NotificationsAccordionProps {
   incidents: Incident[];
+  onIncidentsSeen?: (ids: string[]) => void;
 }
 
 export function NotificationsAccordion({
   incidents,
+  onIncidentsSeen,
 }: NotificationsAccordionProps) {
-  const getIncidentSeverity = (description: string) => {
-    const lower = description.toLowerCase();
-    if (
-      lower.includes("al·lèrgia") ||
-      lower.includes("alergia") ||
-      lower.includes("urgència") ||
-      lower.includes("urgencia") ||
-      lower.includes("emergencia")
-    ) {
-      return "critical";
-    }
-    if (
-      lower.includes("comportament") ||
-      lower.includes("comportamiento") ||
-      lower.includes("problema") ||
-      lower.includes("conflicte") ||
-      lower.includes("conflicto")
-    ) {
-      return "warning";
-    }
-    return "info";
-  };
+  const [isOpen, setIsOpen] = useState(false);
+  const markedIdsRef = useRef<Set<string>>(new Set());
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-red-50 border-red-200";
-      case "warning":
-        return "bg-amber-50 border-amber-200";
-      default:
-        return "bg-blue-50 border-blue-200";
-    }
-  };
+  useEffect(() => {
+    if (!isOpen) return;
 
-  const getSeverityIcon = (severity: string) => {
+    const unseenIds = getUnseenIncidentIds(incidents).filter(
+      (id) => !markedIdsRef.current.has(id),
+    );
+    if (unseenIds.length === 0) return;
+
+    for (const id of unseenIds) {
+      markedIdsRef.current.add(id);
+    }
+
+    let cancelled = false;
+    IncidentService.markIncidentsAsSeen(unseenIds)
+      .then(() => {
+        if (!cancelled) {
+          onIncidentsSeen?.(unseenIds);
+        }
+      })
+      .catch((err) => {
+        console.error("Error marking incidents as seen:", err);
+        for (const id of unseenIds) {
+          markedIdsRef.current.delete(id);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, incidents, onIncidentsSeen]);
+  const getSeverityIcon = (severity: IncidentSeverity) => {
     const iconProps = "h-5 w-5";
     switch (severity) {
       case "critical":
@@ -64,23 +72,21 @@ export function NotificationsAccordion({
     }
   };
 
-  const today = new Date().toDateString();
-  const todayIncidents = incidents.filter(
-    (incident) => new Date(incident.date).toDateString() === today,
-  );
-
   return (
     <div className="mb-4">
-      <AccordionItem title={`Notificaciones (${todayIncidents.length})`}>
-        {todayIncidents.length === 0 ? (
+      <AccordionItem
+        title={`Notificaciones (${incidents.length})`}
+        onOpenChange={setIsOpen}
+      >
+        {incidents.length === 0 ? (
           <div className="text-center py-6">
             <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-gray-700 font-medium">¡Todo va bien hoy!</p>
+            <p className="text-gray-700 font-medium">¡Todo va bien!</p>
             <p className="text-gray-500 text-sm mt-1">No hay notificaciones</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {todayIncidents.map((incident) => {
+            {incidents.map((incident) => {
               const severity = getIncidentSeverity(incident.description);
               return (
                 <div

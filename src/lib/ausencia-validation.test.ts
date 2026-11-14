@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
     AUSENCIA_MESSAGE_MAX_LENGTH,
     buildAusenciaMessage,
+    formatAusenciaDateLong,
     getAusenciaFormErrors,
+    isAusenciaDatesListValid,
     isAusenciaDateValid,
     isAusenciaFormValid,
     isAusenciaMessageValid,
@@ -28,8 +30,8 @@ describe('motivo opcional de ausencia', () => {
         expect(buildAusenciaMessage()).toBe('Ausencia notificada');
         expect(buildAusenciaMessage('')).toBe('Ausencia notificada');
         expect(buildAusenciaMessage('Enfermedad')).toBe('Enfermedad');
-        expect(buildAusenciaMessage('  Enfermedad  ')).toBe('  Enfermedad  ');
-        expect(buildAusenciaMessage('   ')).toBe('   ');
+        expect(buildAusenciaMessage('  Enfermedad  ')).toBe('Enfermedad');
+        expect(buildAusenciaMessage('   ')).toBe('Ausencia notificada');
     });
 });
 
@@ -72,5 +74,36 @@ describe('isAusenciaFormValid', () => {
                 '2026-10-06',
             ).dateISO,
         ).toBe('La fecha no puede ser anterior a hoy');
+    });
+});
+
+describe('multi-fecha ausencia', () => {
+    it('valida listas de fechas no vacías sin límite superior de meses o cantidad', () => {
+        expect(isAusenciaDatesListValid([], '2026-10-06')).toBe(false);
+        expect(isAusenciaDatesListValid(['2026-10-05'], '2026-10-06')).toBe(false);
+        expect(isAusenciaDatesListValid(['2026-10-06', '2026-10-06'], '2026-10-06')).toBe(false);
+        expect(isAusenciaDatesListValid(['2026-10-06', '2027-06-15'], '2026-10-06')).toBe(true);
+    });
+
+    it('valida formulario multi-fecha con getAusenciaFormErrors', () => {
+        expect(
+            getAusenciaFormErrors({ childId: 'c1', dates: [] }, '2026-10-06').dates
+        ).toBe('Elige al menos una fecha');
+        expect(
+            getAusenciaFormErrors(
+                { childId: 'c1', dates: ['2026-10-05'] },
+                '2026-10-06'
+            ).dates
+        ).toBe('Todas las fechas deben ser hoy o posteriores');
+        expect(
+            isAusenciaFormValid(
+                { childId: 'c1', dates: ['2026-10-06', '2026-10-09'], message: 'Viaje' },
+                '2026-10-06'
+            )
+        ).toBe(true);
+    });
+
+    it('formatea fechas largas de ausencia en español', () => {
+        expect(formatAusenciaDateLong('2026-10-06')).toContain('6 de octubre de 2026');
     });
 });

@@ -2,24 +2,24 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Baby, CheckCircle2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-    buildAusenciaMessage,
-    getAusenciaFormErrors,
-    isAusenciaFormValid,
-    todayISODate,
-    AUSENCIA_MESSAGE_MAX_LENGTH,
-} from '@/lib/ausencia-validation';
+import { MonthlyDatePicker } from '@/components/avisos/MonthlyDatePicker';
 import { ChildService, type Child } from '@/services/children.service';
 import {
     FamilyRequestService,
     type FamilyRequestType,
 } from '@/services/family-requests.service';
+import {
+    AUSENCIA_MESSAGE_MAX_LENGTH,
+    buildAusenciaMessage,
+    formatAusenciaDateLong,
+    getAusenciaFormErrors,
+    todayISODate,
+} from '@/lib/ausencia-validation';
 
 interface AusenciaRequestFormProps {
     requestType: FamilyRequestType;
@@ -27,82 +27,148 @@ interface AusenciaRequestFormProps {
 
 export default function AusenciaRequestForm({ requestType }: AusenciaRequestFormProps) {
     const navigate = useNavigate();
+
     const [children, setChildren] = useState<Child[] | null>(null);
     const [loadError, setLoadError] = useState(false);
+
     const [childId, setChildId] = useState('');
-    const [date, setDate] = useState(todayISODate());
+    const [selectedDates, setSelectedDates] = useState<string[]>([]);
     const [message, setMessage] = useState('');
     const [submitAttempted, setSubmitAttempted] = useState(false);
     const [submitError, setSubmitError] = useState('');
+    const [failedDates, setFailedDates] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [sent, setSent] = useState(false);
+    const [sentDates, setSentDates] = useState<string[]>([]);
 
     useEffect(() => {
         let cancelled = false;
-        ChildService.getMyChildren()
-            .then((rows) => {
+        async function loadChildren() {
+            try {
+                const data = await ChildService.getMyChildren();
                 if (cancelled) return;
-                setChildren(rows);
-                if (rows.length === 1) setChildId(rows[0].id);
-            })
-            .catch((error) => {
+                setChildren(data);
+                if (data.length === 1) {
+                    setChildId(data[0].id);
+                }
+            } catch (error) {
                 console.error('Error fetching children:', error);
                 if (!cancelled) setLoadError(true);
-            });
-
+            }
+        }
+        loadChildren();
         return () => {
             cancelled = true;
         };
     }, []);
 
     const today = todayISODate();
-    const value = { childId, dateISO: date, message };
-    const errors = getAusenciaFormErrors(value, today);
+    const errors = getAusenciaFormErrors(
+        { childId, dates: selectedDates, message },
+        today
+    );
     const showChildError = submitAttempted && errors.childId !== undefined;
-    const showDateError = submitAttempted && errors.dateISO !== undefined;
+    const showDatesError = submitAttempted && errors.dates !== undefined;
     const showMessageError = submitAttempted && errors.message !== undefined;
-    const isValid = isAusenciaFormValid(value, today);
+
+    const resetForm = () => {
+        setSelectedDates([]);
+        setMessage('');
+        setSubmitAttempted(false);
+        setSubmitError('');
+        setFailedDates([]);
+        setSentDates([]);
+    };
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
-        if (isSubmitting) return;
         setSubmitAttempted(true);
         setSubmitError('');
-        if (!isValid) return;
+        setFailedDates([]);
 
+        if (Object.keys(errors).length > 0) {
+            return;
+        }
+
+        const targetDates = [...selectedDates].sort();
+        const finalMessage = buildAusenciaMessage(message);
         setIsSubmitting(true);
+
         try {
-            await FamilyRequestService.create({
-                child_id: childId,
-                request_type: requestType,
-                date,
-                message: buildAusenciaMessage(message),
-                contact_method: null,
-                contact_detail: null,
-                payload: {},
+            const results = await Promise.allSettled(
+                targetDates.map((dateISO) =>
+                    FamilyRequestService.create({
+                        child_id: childId,
+                        request_type: requestType,
+                        date: dateISO,
+                        message: finalMessage,
+                        contact_method: null,
+                        contact_detail: null,
+                        payload: {},
+                    })
+                )
+            );
+
+            const succeeded: string[] = [];
+            const failed: string[] = [];
+
+            results.forEach((result, index) => {
+                const dateISO = targetDates[index];
+                if (result.status === 'fulfilled') {
+                    succeeded.push(dateISO);
+                } else {
+                    console.error(`Error creating absence notice for ${dateISO}:`, result.reason);
+                    failed.push(dateISO);
+                }
             });
-            setSent(true);
-        } catch (error) {
-            console.error('Error creating absence notice:', error);
-            setSubmitError('No se ha podido enviar el aviso. Inténtalo de nuevo.');
+
+            if (failed.length === 0) {
+                setSentDates(succeeded);
+                return;
+            }
+
+            setSelectedDates(failed);
+            setFailedDates(failed);
+
+            if (succeeded.length > 0) {
+                setSubmitError(
+                    `Se enviaron ${succeeded.length} de ${targetDates.length} días. Revisa los días pendientes e inténtalo de nuevo.`
+                );
+            } else {
+                setSubmitError('No se ha podido enviar el aviso. Inténtalo de nuevo.');
+            }
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    if (sent) {
+    if (sentDates.length > 0) {
         return (
             <Card>
                 <CardContent className="p-8 text-center">
                     <CheckCircle2 className="mx-auto mb-3 h-12 w-12 text-green-600" />
-                    <p className="font-medium text-gray-700">Aviso enviado</p>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Hemos recibido el aviso de ausencia para el {formatAusenciaDateLong(date)}.
-                        Una persona del centro lo revisará.
+                    <p className="font-semibold text-lg text-gray-800">
+                        {sentDates.length === 1
+                            ? 'Aviso de ausencia enviado'
+                            : `Se han enviado ${sentDates.length} avisos de ausencia`}
                     </p>
-                    <Button className="mt-6" onClick={() => navigate('/avisos')}>
-                        Volver a Avisos
-                    </Button>
+                    <p className="mt-1 text-sm text-gray-500">
+                        Hemos recibido el aviso de ausencia para:
+                    </p>
+                    <ul className="mt-3 space-y-1 text-sm text-gray-700">
+                        {sentDates.map((dateISO) => (
+                            <li key={dateISO} className="capitalize">
+                                {formatAusenciaDateLong(dateISO)}
+                            </li>
+                        ))}
+                    </ul>
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                        <Button variant="secondary" onClick={resetForm}>
+                            Nuevo aviso
+                        </Button>
+                        <Button onClick={() => navigate('/avisos')}>
+                            Volver a Avisos
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -112,8 +178,9 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
         return (
             <Card>
                 <CardContent className="py-12 text-center">
-                    <p className="font-medium text-gray-700">No se han podido cargar tus hijos</p>
-                    <p className="mt-1 text-sm text-gray-500">Inténtalo de nuevo más tarde.</p>
+                    <p className="text-sm text-red-600">
+                        No se pudieron cargar los datos. Inténtalo de nuevo más tarde.
+                    </p>
                 </CardContent>
             </Card>
         );
@@ -134,8 +201,12 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
             <Card>
                 <CardContent className="py-12 text-center">
                     <Baby className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-                    <h3 className="mb-2 text-lg font-medium text-gray-900">No tienes hijos asociados</h3>
-                    <p className="text-gray-500">Contacta con el centro para asociar tus hijos a tu cuenta.</p>
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                        No hay hijos asignados
+                    </h3>
+                    <p className="text-gray-500">
+                        Contacta con el centro para vincular a tus hijos.
+                    </p>
                 </CardContent>
             </Card>
         );
@@ -147,21 +218,20 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
                 <CardTitle>Nuevo aviso de ausencia</CardTitle>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} noValidate className="space-y-4">
                     <div>
                         <Label htmlFor={children.length === 1 ? undefined : 'child'} className="mb-2 block">
                             Hijo
                         </Label>
                         {children.length === 1 ? (
-                            <div className="flex h-10 items-center rounded-md border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900">
+                            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900">
                                 {children[0].first_name} {children[0].last_name}
                             </div>
                         ) : (
                             <Select
                                 id="child"
                                 value={childId}
-                                onChange={(event) => setChildId(event.target.value)}
-                                required
+                                onChange={(e) => setChildId(e.target.value)}
                                 aria-invalid={showChildError}
                                 aria-describedby={showChildError ? 'ausencia-child-error' : undefined}
                             >
@@ -174,79 +244,88 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
                             </Select>
                         )}
                         {showChildError && (
-                            <p id="ausencia-child-error" role="alert" className="mt-1 text-sm text-red-600">
+                            <p id="ausencia-child-error" className="mt-1 text-xs text-red-600">
                                 {errors.childId}
                             </p>
                         )}
                     </div>
 
                     <div>
-                        <Label htmlFor="absence-date" className="mb-2 block">Fecha de ausencia</Label>
-                        <Input
-                            id="absence-date"
-                            type="date"
-                            value={date}
-                            min={today}
-                            onChange={(event) => setDate(event.target.value)}
-                            required
-                            aria-invalid={showDateError}
-                            aria-describedby={showDateError ? 'ausencia-date-error' : undefined}
+                        <Label htmlFor="absence-dates" className="mb-2 block">
+                            Días de ausencia
+                        </Label>
+                        <MonthlyDatePicker
+                            id="absence-dates"
+                            selectedDates={selectedDates}
+                            onChange={setSelectedDates}
+                            minDateISO={today}
+                            todayISO={today}
+                            disabled={isSubmitting}
                         />
-                        {showDateError && (
-                            <p id="ausencia-date-error" role="alert" className="mt-1 text-sm text-red-600">
-                                {errors.dateISO}
+                        {showDatesError && (
+                            <p id="ausencia-dates-error" className="mt-1 text-xs text-red-600">
+                                {errors.dates}
                             </p>
                         )}
                     </div>
 
                     <div>
                         <Label htmlFor="absence-message" className="mb-2 block">
-                            Motivo <span className="font-normal text-gray-500">(opcional)</span>
+                            Motivo o nota (opcional)
                         </Label>
                         <Textarea
                             id="absence-message"
-                            rows={4}
-                            className="resize-none"
-                            placeholder="Añade un motivo si lo deseas…"
                             value={message}
+                            onChange={(e) => setMessage(e.target.value)}
                             maxLength={AUSENCIA_MESSAGE_MAX_LENGTH}
-                            onChange={(event) => setMessage(event.target.value)}
+                            rows={4}
+                            placeholder="Ej. Visita médica o asunto familiar..."
                             aria-invalid={showMessageError}
                             aria-describedby={showMessageError ? 'ausencia-message-error' : undefined}
                         />
-                        <div className="mt-1 flex justify-end">
-                            <span className="text-xs text-gray-500">
+                        <div className="mt-1 flex items-center justify-between gap-2 text-xs">
+                            <span
+                                id="ausencia-message-error"
+                                className={showMessageError ? 'text-red-600' : 'text-transparent'}
+                            >
+                                {showMessageError ? errors.message : '\u00A0'}
+                            </span>
+                            <span className="text-gray-500">
                                 {message.length}/{AUSENCIA_MESSAGE_MAX_LENGTH}
                             </span>
                         </div>
-                        {showMessageError && (
-                            <p id="ausencia-message-error" role="alert" className="mt-1 text-sm text-red-600">
-                                {errors.message}
-                            </p>
-                        )}
                     </div>
 
                     {submitError && (
-                        <div role="alert" className="rounded-md border border-red-100 bg-red-50 p-3 text-sm text-red-600">
-                            {submitError}
+                        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                            <p>{submitError}</p>
+                            {failedDates.length > 0 && (
+                                <ul className="mt-1.5 list-disc pl-5 text-xs space-y-0.5">
+                                    {failedDates.map((dateISO) => (
+                                        <li key={dateISO} className="capitalize">
+                                            {formatAusenciaDateLong(dateISO)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     )}
 
-                    <Button type="submit" className="w-full" disabled={!isValid || isSubmitting}>
-                        {isSubmitting ? 'Enviando...' : 'Enviar aviso'}
-                    </Button>
+                    <div className="flex gap-3 pt-2">
+                        <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                            {isSubmitting ? 'Enviando...' : 'Enviar aviso'}
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={isSubmitting}
+                            onClick={() => navigate('/avisos')}
+                        >
+                            Cancelar
+                        </Button>
+                    </div>
                 </form>
             </CardContent>
         </Card>
     );
-}
-
-function formatAusenciaDateLong(dateISO: string): string {
-    const [year, month, day] = dateISO.split('-').map(Number);
-    return new Intl.DateTimeFormat('es-ES', {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    }).format(new Date(year, month - 1, day));
 }

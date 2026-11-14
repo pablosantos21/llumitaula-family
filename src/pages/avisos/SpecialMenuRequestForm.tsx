@@ -83,13 +83,15 @@ export default function SpecialMenuRequestForm({ requestType }: SpecialMenuReque
         setContactDetail(method === 'email' && user?.email ? user.email : '');
     };
 
+    const today = todayISO();
+    const isDateValid = date !== '' && date >= today;
     const trimmedMessage = message.trim();
     const trimmedContactDetail = contactDetail.trim();
     const messageTooLong = message.length > MESSAGE_MAX_LENGTH;
     const contactDetailTooLong = contactDetail.length > CONTACT_DETAIL_MAX_LENGTH;
     const isValid =
         childId !== '' &&
-        date !== '' &&
+        isDateValid &&
         contactMethod !== '' &&
         trimmedMessage.length > 0 &&
         !messageTooLong &&
@@ -116,9 +118,9 @@ export default function SpecialMenuRequestForm({ requestType }: SpecialMenuReque
                 child_id: childId,
                 request_type: requestType,
                 date,
-                message,
+                message: trimmedMessage,
                 contact_method: contactMethod,
-                contact_detail: contactDetail,
+                contact_detail: trimmedContactDetail,
             });
             setSent(true);
         } catch {
@@ -215,10 +217,16 @@ export default function SpecialMenuRequestForm({ requestType }: SpecialMenuReque
                         <Input
                             id="date"
                             type="date"
+                            min={today}
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
                             required
                         />
+                        {date !== '' && !isDateValid && (
+                            <p className="text-xs text-red-600 mt-1">
+                                No puedes seleccionar una fecha anterior a hoy.
+                            </p>
+                        )}
                     </div>
 
                     <div>

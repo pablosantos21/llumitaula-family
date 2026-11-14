@@ -12,7 +12,7 @@ import ChildrenPage from "./pages/children/ChildrenPage";
 import AvisosPage from "./pages/avisos/AvisosPage";
 import AvisoDetailPage from "./pages/avisos/AvisoDetailPage";
 import NotificacionesPage from "./pages/notificaciones/NotificacionesPage";
-import { BottomNavigation } from "./components/BottomNavigation";
+import NotFoundPage from "./pages/NotFoundPage";
 import { Loader2 } from "lucide-react";
 
 function ProtectedRoute() {
@@ -49,8 +49,8 @@ function App() {
               <Route path="/notificaciones" element={<NotificacionesPage />} />
             </Route>
           </Route>
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
-        <BottomNavigation />
       </AuthProvider>
     </BrowserRouter>
   );

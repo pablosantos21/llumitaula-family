@@ -38,19 +38,32 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
     };
   }, [isOpen]);
 
+  const initial =
+    user.name.trim().charAt(0).toUpperCase() ||
+    user.email.trim().charAt(0).toUpperCase() ||
+    "?";
+
   return (
     <div ref={containerRef} className="relative">
       <button
+        type="button"
+        aria-label="Menú de perfil"
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
         onClick={() => setIsOpen((open) => !open)}
         className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 transition-colors"
       >
         <div className="h-9 w-9 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
-          {user.name.charAt(0)}
+          {initial}
         </div>
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+        <div
+          role="menu"
+          aria-label="Opciones de cuenta"
+          className="absolute right-0 top-full z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg"
+        >
           <div className="px-4 py-3 border-b border-gray-100">
             <p className="text-sm font-medium text-gray-900 truncate">
               {user.name}
@@ -58,10 +71,12 @@ export function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
             <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
           <button
+            type="button"
+            role="menuitem"
             onClick={onLogout}
             className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" aria-hidden="true" />
             Cerrar sesión
           </button>
         </div>

@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Baby, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ChildSelectorField } from '@/components/avisos/ChildSelectorField';
+import { ChildrenLoadState } from '@/components/avisos/ChildrenLoadState';
 import { MonthlyDatePicker } from '@/components/avisos/MonthlyDatePicker';
-import { ChildService, type Child } from '@/services/children.service';
+import { useMyChildren } from '@/hooks/useMyChildren';
 import {
     FamilyRequestService,
     type FamilyRequestType,
@@ -27,11 +28,8 @@ interface AusenciaRequestFormProps {
 
 export default function AusenciaRequestForm({ requestType }: AusenciaRequestFormProps) {
     const navigate = useNavigate();
+    const { children, loadError, childId, setChildId } = useMyChildren();
 
-    const [children, setChildren] = useState<Child[] | null>(null);
-    const [loadError, setLoadError] = useState(false);
-
-    const [childId, setChildId] = useState('');
     const [selectedDates, setSelectedDates] = useState<string[]>([]);
     const [message, setMessage] = useState('');
     const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -39,27 +37,6 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
     const [failedDates, setFailedDates] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [sentDates, setSentDates] = useState<string[]>([]);
-
-    useEffect(() => {
-        let cancelled = false;
-        async function loadChildren() {
-            try {
-                const data = await ChildService.getMyChildren();
-                if (cancelled) return;
-                setChildren(data);
-                if (data.length === 1) {
-                    setChildId(data[0].id);
-                }
-            } catch (error) {
-                console.error('Error fetching children:', error);
-                if (!cancelled) setLoadError(true);
-            }
-        }
-        loadChildren();
-        return () => {
-            cancelled = true;
-        };
-    }, []);
 
     const today = todayISODate();
     const errors = getAusenciaFormErrors(
@@ -174,42 +151,8 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
         );
     }
 
-    if (loadError) {
-        return (
-            <Card>
-                <CardContent className="py-12 text-center">
-                    <p className="text-sm text-red-600">
-                        No se pudieron cargar los datos. Inténtalo de nuevo más tarde.
-                    </p>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    if (children === null) {
-        return (
-            <Card>
-                <CardContent className="flex justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-                </CardContent>
-            </Card>
-        );
-    }
-
-    if (children.length === 0) {
-        return (
-            <Card>
-                <CardContent className="py-12 text-center">
-                    <Baby className="mx-auto mb-4 h-16 w-16 text-gray-300" />
-                    <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                        No hay hijos asignados
-                    </h3>
-                    <p className="text-gray-500">
-                        Contacta con el centro para vincular a tus hijos.
-                    </p>
-                </CardContent>
-            </Card>
-        );
+    if (loadError || children === null || children.length === 0) {
+        return <ChildrenLoadState children={children} loadError={loadError} />;
     }
 
     return (
@@ -219,36 +162,14 @@ export default function AusenciaRequestForm({ requestType }: AusenciaRequestForm
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} noValidate className="space-y-4">
-                    <div>
-                        <Label htmlFor={children.length === 1 ? undefined : 'child'} className="mb-2 block">
-                            Hijo
-                        </Label>
-                        {children.length === 1 ? (
-                            <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-900">
-                                {children[0].first_name} {children[0].last_name}
-                            </div>
-                        ) : (
-                            <Select
-                                id="child"
-                                value={childId}
-                                onChange={(e) => setChildId(e.target.value)}
-                                aria-invalid={showChildError}
-                                aria-describedby={showChildError ? 'ausencia-child-error' : undefined}
-                            >
-                                <option value="">Selecciona un hijo</option>
-                                {children.map((child) => (
-                                    <option key={child.id} value={child.id}>
-                                        {child.first_name} {child.last_name}
-                                    </option>
-                                ))}
-                            </Select>
-                        )}
-                        {showChildError && (
-                            <p id="ausencia-child-error" className="mt-1 text-xs text-red-600">
-                                {errors.childId}
-                            </p>
-                        )}
-                    </div>
+                    <ChildSelectorField
+                        childrenList={children}
+                        childId={childId}
+                        onChange={setChildId}
+                        error={showChildError ? errors.childId : undefined}
+                        errorId="ausencia-child-error"
+                        disabled={isSubmitting}
+                    />
 
                     <div>
                         <Label htmlFor="absence-dates" className="mb-2 block">

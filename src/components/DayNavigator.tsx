@@ -30,15 +30,22 @@ export function DayNavigator({
     <div className="bg-white rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between gap-4">
         <Button
+          type="button"
           variant="outline"
           size="icon"
+          aria-label="Día anterior"
           onClick={onPreviousDay}
           className="flex-shrink-0"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
         </Button>
 
-        <button onClick={onToday} className="flex-1 text-center">
+        <button
+          type="button"
+          onClick={onToday}
+          aria-label={isToday ? "Hoy" : "Volver a hoy"}
+          className="flex-1 text-center"
+        >
           {isToday ? (
             <p className="text-sm text-gray-500">Hoy</p>
           ) : (
@@ -51,12 +58,14 @@ export function DayNavigator({
         </button>
 
         <Button
+          type="button"
           variant="outline"
           size="icon"
+          aria-label="Día siguiente"
           onClick={onNextDay}
           className="flex-shrink-0"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-5 w-5" aria-hidden="true" />
         </Button>
       </div>
     </div>

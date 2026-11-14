@@ -8,6 +8,7 @@ import {
 } from "@/services/meal-records.service";
 import { mapMealStatusToEatingType } from "@/lib/meal-records-mapping";
 import { extractISODate, toLocalISODate } from "@/lib/date";
+import { selectMenusByType } from "@/lib/menu-selection";
 import { useMealCapability } from "@/hooks/useMealCapability";
 import { Tabs } from "@/components/ui/tabs";
 import { DayNavigator } from "@/components/DayNavigator";
@@ -29,6 +30,7 @@ export default function ChildrenPage() {
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [menu, setMenu] = useState<Menu | null>(null);
+  const [nightMenu, setNightMenu] = useState<Menu | null>(null);
   const [menuError, setMenuError] = useState<string | null>(null);
   const [todayIncidents, setTodayIncidents] = useState<Incident[]>([]);
   const [incidentsError, setIncidentsError] = useState<string | null>(null);
@@ -97,6 +99,7 @@ export default function ChildrenPage() {
     const fetchData = async () => {
       setIsLoadingMenu(true);
       setMenu(null);
+      setNightMenu(null);
       setTodayIncidents([]);
       setMenuError(null);
       setIncidentsError(null);
@@ -105,7 +108,10 @@ export default function ChildrenPage() {
         try {
           const schoolId = selectedChild.classes?.school_id;
           if (!schoolId) {
-            if (!cancelled) setMenu(null);
+            if (!cancelled) {
+              setMenu(null);
+              setNightMenu(null);
+            }
             return;
           }
           const menus = await MenuService.getMenusBySchoolAndDate(
@@ -113,12 +119,16 @@ export default function ChildrenPage() {
             dateStr,
           );
           if (!cancelled) {
-            setMenu(menus.length > 0 ? menus[0].menus || null : null);
+            const { dailyMenu, nightMenu: complementaryMenu } =
+              selectMenusByType(menus);
+            setMenu(dailyMenu);
+            setNightMenu(complementaryMenu);
           }
         } catch (err) {
           console.error("Error fetching menu:", err);
           if (!cancelled) {
             setMenu(null);
+            setNightMenu(null);
             setMenuError("No se pudo cargar el menú de este día");
           }
         }
@@ -211,6 +221,7 @@ export default function ChildrenPage() {
 
   const resetDayAndChildState = () => {
     setMenu(null);
+    setNightMenu(null);
     setTodayIncidents([]);
     setMenuError(null);
     setIncidentsError(null);
@@ -357,7 +368,7 @@ export default function ChildrenPage() {
           <>
             <DailyMenuSection menu={menu} isLoading={isLoadingMenu} />
 
-            <NightMenuSection menu={null} isLoading={isLoadingMenu} />
+            <NightMenuSection menu={nightMenu} isLoading={isLoadingMenu} />
           </>
         )}
 

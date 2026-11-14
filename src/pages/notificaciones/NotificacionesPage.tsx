@@ -24,6 +24,8 @@ export default function NotificacionesPage() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [activeTab, setActiveTab] = useState<string>("pending");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [responseText, setResponseText] = useState("");
   const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
@@ -34,6 +36,8 @@ export default function NotificacionesPage() {
 
     const fetchIncidents = async () => {
       try {
+        setIsLoading(true);
+        setLoadError(null);
         const data = await IncidentService.getIncidentsForMyChildren();
         if (cancelled) return;
         setIncidents(data);
@@ -59,6 +63,13 @@ export default function NotificacionesPage() {
         }
       } catch (err) {
         console.error("Error fetching incidents:", err);
+        if (!cancelled) {
+          setLoadError(
+            err instanceof Error
+              ? err.message
+              : "No se pudieron cargar las notificaciones",
+          );
+        }
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -66,12 +77,12 @@ export default function NotificacionesPage() {
       }
     };
 
-    fetchIncidents();
+    void fetchIncidents();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadAttempt]);
 
   const handleOpenResponseForm = (incidentId: string) => {
     setRespondingId(incidentId);
@@ -194,6 +205,26 @@ export default function NotificacionesPage() {
             <Card>
               <CardContent className="p-8 text-center">
                 <p className="text-gray-500">Cargando...</p>
+              </CardContent>
+            </Card>
+          ) : loadError ? (
+            <Card>
+              <CardContent className="p-8 text-center space-y-4">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
+                <div>
+                  <p className="text-gray-900 font-medium">
+                    No se pudieron cargar las notificaciones
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Comprueba tu conexión e inténtalo de nuevo.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => setLoadAttempt((value) => value + 1)}
+                >
+                  Reintentar
+                </Button>
               </CardContent>
             </Card>
           ) : displayIncidents.length === 0 ? (

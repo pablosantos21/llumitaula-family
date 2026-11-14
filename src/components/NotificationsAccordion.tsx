@@ -64,23 +64,18 @@ export function NotificationsAccordion({
     }
   };
 
-  const today = new Date().toDateString();
-  const todayIncidents = incidents.filter(
-    (incident) => new Date(incident.date).toDateString() === today,
-  );
-
   return (
     <div className="mb-4">
-      <AccordionItem title={`Notificaciones (${todayIncidents.length})`}>
-        {todayIncidents.length === 0 ? (
+      <AccordionItem title={`Notificaciones (${incidents.length})`}>
+        {incidents.length === 0 ? (
           <div className="text-center py-6">
             <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <p className="text-gray-700 font-medium">¡Todo va bien hoy!</p>
+            <p className="text-gray-700 font-medium">¡Todo va bien!</p>
             <p className="text-gray-500 text-sm mt-1">No hay notificaciones</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {todayIncidents.map((incident) => {
+            {incidents.map((incident) => {
               const severity = getIncidentSeverity(incident.description);
               return (
                 <div

@@ -5,15 +5,29 @@ interface AccordionItemProps {
     title: string;
     children: React.ReactNode;
     defaultOpen?: boolean;
+    onOpenChange?: (isOpen: boolean) => void;
 }
 
-export function AccordionItem({ title, children, defaultOpen = false }: AccordionItemProps) {
+export function AccordionItem({
+    title,
+    children,
+    defaultOpen = false,
+    onOpenChange,
+}: AccordionItemProps) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    const handleToggle = () => {
+        const nextOpen = !isOpen;
+        setIsOpen(nextOpen);
+        onOpenChange?.(nextOpen);
+    };
 
     return (
         <div className="border border-gray-200 rounded-lg overflow-hidden">
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                type="button"
+                onClick={handleToggle}
+                aria-expanded={isOpen}
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
             >
                 <h3 className="font-medium text-gray-900 text-left">{title}</h3>

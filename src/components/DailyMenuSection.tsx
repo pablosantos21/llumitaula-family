@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { hasMenuDishes } from '@/lib/menu-selection';
 import type { Menu } from '@/services/menus.service';
 import { Loader2 } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export function DailyMenuSection({ menu, isLoading }: DailyMenuSectionProps) {
         );
     }
 
-    if (!menu) {
+    if (!hasMenuDishes(menu)) {
         return (
             <Card className="mb-4">
                 <CardContent className="p-6 text-center">

@@ -44,36 +44,14 @@ export const ChildService = {
             throw new Error(error.message);
         }
 
-        return (data as unknown as Child[]) || [];
-    },
-
-    getChildById: async (id: string): Promise<Child | null> => {
-        const { data, error } = await supabase
-            .from('children')
-            .select(`
-                id,
-                first_name,
-                last_name,
-                class_id,
-                created_at,
-                classes (
-                    id,
-                    name,
-                    school_id,
-                    schools (
-                        id,
-                        name
-                    )
-                )
-            `)
-            .eq('id', id)
-            .single();
-
-        if (error) {
-            console.error('Error fetching child:', error);
-            return null;
-        }
-
-        return data as unknown as Child;
+        return (data ?? []).map((row) => ({
+            ...row,
+            classes: row.classes
+                ? {
+                      ...row.classes,
+                      schools: row.classes.schools ?? undefined,
+                  }
+                : undefined,
+        }));
     },
 };

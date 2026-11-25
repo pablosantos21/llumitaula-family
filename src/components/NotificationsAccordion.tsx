@@ -2,6 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { AccordionItem } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { getUnseenIncidentIds } from "@/lib/incident-response";
+import {
+  getIncidentSeverity,
+  getSeverityColor,
+  type IncidentSeverity,
+} from "@/lib/incident-severity";
 import { IncidentService, type Incident } from "@/services/incidents.service";
 import {
   AlertCircle,
@@ -55,41 +60,7 @@ export function NotificationsAccordion({
       cancelled = true;
     };
   }, [isOpen, incidents, onIncidentsSeen]);
-  const getIncidentSeverity = (description: string) => {
-    const lower = description.toLowerCase();
-    if (
-      lower.includes("al·lèrgia") ||
-      lower.includes("alergia") ||
-      lower.includes("urgència") ||
-      lower.includes("urgencia") ||
-      lower.includes("emergencia")
-    ) {
-      return "critical";
-    }
-    if (
-      lower.includes("comportament") ||
-      lower.includes("comportamiento") ||
-      lower.includes("problema") ||
-      lower.includes("conflicte") ||
-      lower.includes("conflicto")
-    ) {
-      return "warning";
-    }
-    return "info";
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case "critical":
-        return "bg-red-50 border-red-200";
-      case "warning":
-        return "bg-amber-50 border-amber-200";
-      default:
-        return "bg-blue-50 border-blue-200";
-    }
-  };
-
-  const getSeverityIcon = (severity: string) => {
+  const getSeverityIcon = (severity: IncidentSeverity) => {
     const iconProps = "h-5 w-5";
     switch (severity) {
       case "critical":

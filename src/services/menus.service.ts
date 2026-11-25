@@ -43,36 +43,9 @@ export const MenuService = {
             throw new Error(error.message);
         }
 
-        return (data as unknown as MenuAssignment[]) || [];
-    },
-
-    getMenusByDateRange: async (schoolId: string, startDate: string, endDate: string): Promise<MenuAssignment[]> => {
-        const { data, error } = await supabase
-            .from('menus_schools')
-            .select(`
-                menu_id,
-                school_id,
-                date,
-                menus (
-                    id,
-                    first_course,
-                    second_course,
-                    side,
-                    salad,
-                    dessert,
-                    type
-                )
-            `)
-            .eq('school_id', schoolId)
-            .gte('date', startDate)
-            .lte('date', endDate)
-            .order('date');
-
-        if (error) {
-            console.error('Error fetching menus:', error);
-            throw new Error(error.message);
-        }
-
-        return (data as unknown as MenuAssignment[]) || [];
+        return (data ?? []).map((row) => ({
+            ...row,
+            menus: row.menus ?? undefined,
+        }));
     },
 };

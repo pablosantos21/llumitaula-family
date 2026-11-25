@@ -1,4 +1,5 @@
 const ISO_DATE_PREFIX_RE = /^(\d{4})-(\d{2})-(\d{2})/;
+const ISO_CALENDAR_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Formatea una fecha `Date` como `YYYY-MM-DD` usando la zona horaria local. */
 export function toLocalISODate(date: Date = new Date()): string {
@@ -6,6 +7,16 @@ export function toLocalISODate(date: Date = new Date()): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+/** Comprueba que una cadena tenga formato `YYYY-MM-DD` y exista en el calendario. */
+export function isISOCalendarDate(value: string): boolean {
+    if (!ISO_CALENDAR_DATE_RE.test(value)) {
+        return false;
+    }
+
+    const parsed = parseLocalISODate(value);
+    return toLocalISODate(parsed) === value;
 }
 
 /** Extrae `YYYY-MM-DD` preservando el prefijo de fecha sin desplazamientos UTC. */
@@ -39,6 +50,21 @@ export function parseLocalISODate(value: string): Date {
 /** Indica si dos fechas corresponden al mismo día calendario en hora local. */
 export function isSameLocalDay(a: Date, b: Date = new Date()): boolean {
     return toLocalISODate(a) === toLocalISODate(b);
+}
+
+/** Formatea una fecha `YYYY-MM-DD` en español largo (con día de la semana). */
+export function formatDateLongEs(value: string): string {
+    const date = parseLocalISODate(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
 }
 
 /** Formatea la fecha de una incidencia en español sin desplazamientos por zona horaria UTC. */

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     extractISODate,
+    formatDateLongEs,
     formatIncidentDateEs,
+    isISOCalendarDate,
     isSameLocalDay,
     parseLocalISODate,
     toLocalISODate,
@@ -60,5 +62,19 @@ describe('formatIncidentDateEs', () => {
 
     it('devuelve el texto original si la fecha no es válida', () => {
         expect(formatIncidentDateEs('fecha-invalida')).toBe('fecha-invalida');
+    });
+});
+
+describe('isISOCalendarDate y formatDateLongEs', () => {
+    it('valida fechas calendario YYYY-MM-DD y rechaza fechas inexistentes', () => {
+        expect(isISOCalendarDate('2026-10-06')).toBe(true);
+        expect(isISOCalendarDate('2024-02-29')).toBe(true);
+        expect(isISOCalendarDate('2026-02-29')).toBe(false);
+        expect(isISOCalendarDate('2026-02-30')).toBe(false);
+        expect(isISOCalendarDate('06-10-2026')).toBe(false);
+    });
+
+    it('formatea la fecha larga en español con día de la semana', () => {
+        expect(formatDateLongEs('2026-10-06')).toContain('6 de octubre de 2026');
     });
 });

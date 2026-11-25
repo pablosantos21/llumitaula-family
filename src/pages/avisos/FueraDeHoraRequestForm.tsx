@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ChildService, type Child } from '@/services/children.service';
+import { ChildSelectorField } from '@/components/avisos/ChildSelectorField';
+import { ChildrenLoadState } from '@/components/avisos/ChildrenLoadState';
+import { useMyChildren } from '@/hooks/useMyChildren';
 import {
     FamilyRequestService,
     type FamilyRequestType,
@@ -25,7 +26,7 @@ import {
     maxFueraDeHoraISODate,
     todayISODate,
 } from '@/lib/fuera-de-hora-validation';
-import { Baby, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface FueraDeHoraRequestFormProps {
     requestType: FamilyRequestType;
@@ -33,11 +34,8 @@ interface FueraDeHoraRequestFormProps {
 
 export default function FueraDeHoraRequestForm({ requestType }: FueraDeHoraRequestFormProps) {
     const navigate = useNavigate();
+    const { children, loadError, childId, setChildId, resetChildId } = useMyChildren();
 
-    const [children, setChildren] = useState<Child[] | null>(null);
-    const [loadError, setLoadError] = useState(false);
-
-    const [childId, setChildId] = useState('');
     const [date, setDate] = useState(todayISODate);
     const [direction, setDirection] = useState<FueraDeHoraDirection | ''>('');
     const [estimatedTime, setEstimatedTime] = useState('');
@@ -46,27 +44,6 @@ export default function FueraDeHoraRequestForm({ requestType }: FueraDeHoraReque
     const [submitError, setSubmitError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [sent, setSent] = useState(false);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        ChildService.getMyChildren()
-            .then((rows) => {
-                if (cancelled) return;
-                setChildren(rows);
-                if (rows.length === 1) {
-                    setChildId(rows[0].id);
-                }
-            })
-            .catch((error) => {
-                console.error('Error fetching children:', error);
-                if (!cancelled) setLoadError(true);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, []);
 
     const today = todayISODate();
     const maxDate = maxFueraDeHoraISODate();
@@ -87,7 +64,7 @@ export default function FueraDeHoraRequestForm({ requestType }: FueraDeHoraReque
         ) && !messageTooLong;
 
     const resetForm = () => {
-        setChildId(children?.length === 1 ? children[0].id : '');
+        resetChildId();
         setDate(todayISODate());
         setDirection('');
         setEstimatedTime('');
@@ -147,37 +124,8 @@ export default function FueraDeHoraRequestForm({ requestType }: FueraDeHoraReque
         );
     }
 
-    if (loadError) {
-        return (
-            <Card>
-                <CardContent className="py-12 text-center">
-                    <p className="text-gray-700 font-medium">No se han podido cargar tus hijos</p>
-                    <p className="text-gray-500 text-sm mt-1">Inténtalo de nuevo más tarde.</p>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    if (children === null) {
-        return (
-            <Card>
-                <CardContent className="py-12 flex justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-                </CardContent>
-            </Card>
-        );
-    }
-
-    if (children.length === 0) {
-        return (
-            <Card>
-                <CardContent className="py-12 text-center">
-                    <Baby className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No tienes hijos asociados</h3>
-                    <p className="text-gray-500">Contacta con el centro para asociar tus hijos a tu cuenta.</p>
-                </CardContent>
-            </Card>
-        );
+    if (loadError || children === null || children.length === 0) {
+        return <ChildrenLoadState children={children} loadError={loadError} />;
     }
 
     return (
@@ -187,39 +135,14 @@ export default function FueraDeHoraRequestForm({ requestType }: FueraDeHoraReque
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <Label htmlFor={children.length === 1 ? undefined : 'child'} className="block mb-2">Hijo</Label>
-                        {children.length === 1 ? (
-                            <div className="flex h-10 items-center rounded-md border border-gray-300 bg-gray-50 px-3 text-sm text-gray-900">
-                                {children[0].first_name} {children[0].last_name}
-                            </div>
-                        ) : (
-                            <Select
-                                id="child"
-                                value={childId}
-                                onChange={(e) => setChildId(e.target.value)}
-                                required
-                                aria-invalid={showChildError}
-                                aria-describedby={showChildError ? 'fuera-de-hora-child-error' : undefined}
-                            >
-                                <option value="">Selecciona un hijo</option>
-                                {children.map((child) => (
-                                    <option key={child.id} value={child.id}>
-                                        {child.first_name} {child.last_name}
-                                    </option>
-                                ))}
-                            </Select>
-                        )}
-                        {showChildError && (
-                            <p
-                                id="fuera-de-hora-child-error"
-                                role="alert"
-                                className="mt-1 text-sm text-red-600"
-                            >
-                                {formErrors.childId}
-                            </p>
-                        )}
-                    </div>
+                    <ChildSelectorField
+                        childrenList={children}
+                        childId={childId}
+                        onChange={setChildId}
+                        error={showChildError ? formErrors.childId : undefined}
+                        errorId="fuera-de-hora-child-error"
+                        required
+                    />
 
                     <div>
                         <Label htmlFor="date" className="block mb-2">Fecha</Label>
